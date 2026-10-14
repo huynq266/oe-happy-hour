@@ -4,7 +4,7 @@ const me = { x: -999, y: -999, vx: 0, vy: 0, ang: -Math.PI / 2, tAng: -Math.PI /
 function chargeLv() { return me.mode === 'charge' ? Math.min(1, (performance.now() - me.chT) / CHARGE_MS) : 0; }
 cv.addEventListener('pointerdown', e => {
   if (e.pointerType === 'mouse' && e.button !== 0) return;
-  if (mySlot < 0) return; // the host has no fan
+  if (mySlot < 0) return; // the quản trò has no fan
   try { cv.setPointerCapture(e.pointerId); } catch (err) {}
   const p = toWorld(e);
   Object.assign(me, p, { down: true, vis: true, type: e.pointerType, t: e.timeStamp, downT: e.timeStamp, downX: p.x, downY: p.y, vx: 0, vy: 0 });

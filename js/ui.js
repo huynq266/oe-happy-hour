@@ -5,7 +5,7 @@ function updateHud() {
   $('time').textContent = fmtTime(phase === 'count' ? roundSet(R.round).time : R.time);
   $('timePill').classList.toggle('hot', phase === 'play' && R.time <= 30);
   $('score').textContent = R.score; $('total').textContent = R.fish.reduce((a, f) => a + (f.pts || 0), 0); // points in the plate / on the field
-  $('minePill').hidden = mySlot < 0; // the host has no share
+  $('minePill').hidden = mySlot < 0; // the quản trò has no share
   $('mine').textContent = `${R.cred[mySlot] || 0}/${R.quota[mySlot] || 0}`;
   $('minePill').style.boxShadow = `inset 0 0 0 3px ${COLORS[mySlot % COLORS.length]}, 0 3px 0 rgba(0,0,0,.18)`;
   $('windPill').hidden = !C.wind; $('foulPill').hidden = !C.foul;
@@ -22,8 +22,8 @@ function updateHud() {
 
 // ================= UI flow =================
 function show(id) {
-  ['home', 'lobby', 'endScreen'].forEach(x => $(x).hidden = x !== id); $('hud').hidden = !(phase === 'count' || phase === 'play' || phase === 'over');
-  document.body.classList.toggle('gm', mySlot < 0 && role === 'host');
+  ['home', 'lobby', 'endScreen', 'gmPanel'].forEach(x => $(x).hidden = x !== id); $('hud').hidden = !(phase === 'count' || phase === 'play' || phase === 'over');
+  document.body.classList.toggle('gm', role === 'gm');
 }
 function onPhase() {
   if (phase === 'count' || phase === 'play' || phase === 'over') { show(null); renderChips(); updateHud(); }
@@ -47,7 +47,9 @@ function renderChips() {
   }
 }
 function renderLobby() {
-  const host = role !== 'client', solo = role === 'solo', C = ROUNDS[nextRound];
+  // ctl: this screen sets up and starts the rounds. That's the quản trò's board when the room is linked to one,
+  // otherwise the đội trưởng (or the solo player).
+  const solo = role === 'solo', cap = role === 'host', gmRun = cap ? gmLinked() : gmOn, ctl = solo || (cap && !gmRun), C = ROUNDS[nextRound];
   $('codeBox').hidden = solo;
   $('lobbyCode').textContent = roomCode || '----';
   // last round
@@ -76,13 +78,16 @@ function renderLobby() {
     `Mỗi con cá có từ 1 đến 10 điểm, ghi ở mặt sau con cá: mỗi mức điểm có ${S.fish / 10} con. Cá vào đĩa thì đội được cộng điểm của con đó, bay ra thì bị trừ lại.`,
     ...(players.length > 1 ? ['Hết vòng, mỗi người phải có ít nhất 1 con cá trong đĩa. Nếu có người không có con nào, đội bị trừ số điểm bằng số cá của người cao điểm nhất đội.'] : []),
     ...C.rules].forEach(t => { const li = document.createElement('li'); li.textContent = t; rl.appendChild(li); });
-  // settings for the round about to be played (host / solo), and the room's player limit (host)
-  $('setBox').hidden = !host;
-  $('roomBox').hidden = role !== 'host';
-  if (host) fillSettings();
+  // settings for the round about to be played, and the room's player limit (whoever runs the room here)
+  $('setBox').hidden = !ctl;
+  $('roomBox').hidden = !(cap && ctl);
+  $('gmBox').hidden = !cap;
+  if (cap) fillGM();
+  if (ctl) fillSettings();
   // team + players
-  $('teamRow').hidden = !host;
-  $('teamField').hidden = !(role === 'host' && !results.some(r => r != null));
+  $('teamRow').hidden = !(ctl || cap);
+  $('roundField').hidden = !ctl;
+  $('teamField').hidden = !(cap && !results.some(r => r != null));
   const rs = $('roundSel'); rs.textContent = '';
   for (let r = 1; r <= 3; r++) {
     const o = document.createElement('option'); o.value = r;
@@ -94,35 +99,37 @@ function renderLobby() {
   $('pCount').textContent = players.length;
   $('pMax').textContent = solo ? 1 : settings.maxPlayers;
   const ul = $('pList'); ul.textContent = '';
-  if (!solo && hostName) { // the host, apart from the team
+  if (gmRun) { // the quản trò, apart from the team
     const li = document.createElement('li'); li.className = 'gm';
-    const em = document.createElement('em'); em.textContent = 'quản trò, không chơi';
-    li.append(document.createTextNode(hostName + (role === 'host' ? ' (bạn)' : '')), em);
+    const em = document.createElement('em'); em.textContent = 'cài đặt và bắt đầu vòng, không chơi';
+    li.append(document.createTextNode('Quản trò'), em);
     ul.appendChild(li);
   }
   const ready = players.filter(p => p.ready).length, allReady = players.length > 0 && ready === players.length;
   for (const p of players) {
-    const li = dotLi(p.slot, p.name + (p.slot === mySlot ? ' (bạn)' : ''), solo ? '' : p.ready ? 'sẵn sàng ✓' : 'chưa sẵn sàng');
+    const li = dotLi(p.slot, p.name + (p.slot === mySlot ? ' (bạn)' : '') + (!solo && p.slot === 0 ? ' · đội trưởng' : ''), solo ? '' : p.ready ? 'sẵn sàng ✓' : 'chưa sẵn sàng');
     if (p.ready) li.querySelector('em').className = 'ok';
-    if (role === 'host' && phase === 'lobby') {
+    if (cap && ctl && phase === 'lobby' && p.slot !== mySlot) {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'kick'; b.textContent = 'Mời ra';
       b.addEventListener('click', () => kickPlayer(p.slot));
       li.appendChild(b);
     }
     ul.appendChild(li);
   }
-  $('startBtn').hidden = !host;
+  $('startBtn').hidden = !ctl;
   $('startBtn').disabled = !(solo || allReady);
   $('startBtn').textContent = `Bắt đầu vòng ${nextRound}` + (solo || !players.length ? '' : ` (${ready}/${players.length} sẵn sàng)`);
   // a player's own ready toggle
   const meP = players.find(p => p.slot === mySlot);
-  $('readyBtn').hidden = role !== 'client' || !meP;
+  $('readyBtn').hidden = solo || !meP;
   $('readyBtn').classList.toggle('on', !!(meP && meP.ready));
   $('readyBtn').textContent = meP && meP.ready ? 'Đã sẵn sàng ✓ (bấm để huỷ)' : `Sẵn sàng chơi vòng ${nextRound}`;
+  const keepOpen = 'Giữ tab này luôn mở trong lúc chơi, vì máy đội trưởng là máy tính điểm cho cả đội.';
   $('lobbyNote').textContent = solo ? `Chơi thử một mình: bạn được quạt cả ${S.fish} con.`
-    : host ? (!players.length ? 'Chờ ít nhất 1 người chơi vào phòng. ' : allReady ? '' : 'Chờ mọi người bấm "Sẵn sàng" rồi mới bắt đầu được. ') +
-      `Đội ${teamNo}. Gửi mã phòng cho người chơi. Bạn là quản trò: không chơi, chỉ cài đặt từng vòng, bắt đầu vòng và theo dõi. Giữ tab này luôn mở trong lúc chơi, vì máy quản trò là máy tính điểm cho cả đội.`
-    : meP && meP.ready ? `Đội ${teamNo}. Chờ quản trò bắt đầu vòng ${nextRound}...`
+    : cap && ctl ? (allReady ? '' : 'Chờ mọi người (cả bạn) bấm "Sẵn sàng" rồi mới bắt đầu được. ') +
+      `Đội ${teamNo}. Gửi mã phòng cho đồng đội. Bạn là đội trưởng: vừa chơi vừa giữ phòng. Phòng chưa nối với quản trò nên bạn tự cài đặt và bắt đầu từng vòng. ${keepOpen}`
+    : cap ? `Đội ${teamNo}. Gửi mã phòng cho đồng đội. Quản trò cài đặt và bắt đầu từng vòng, bạn chỉ cần bấm "Sẵn sàng" như mọi người. ${keepOpen}`
+    : meP && meP.ready ? `Đội ${teamNo}. Chờ ${gmOn ? 'quản trò' : 'đội trưởng'} bắt đầu vòng ${nextRound}...`
     : `Đội ${teamNo}. Xem luật vòng ${nextRound} rồi bấm "Sẵn sàng".`;
 }
 // The host sets up only the round about to be played: its fish / time / plate size. Built once, then only
@@ -148,6 +155,16 @@ function fillSettings() {
     if (document.activeElement !== $(id)) $(id).value = v;
   $('maxSel').value = settings.maxPlayers;
 }
+// đội trưởng: the room's link to a quản trò's board
+function fillGM(msg) {
+  const on = gmLinked();
+  $('gmState').textContent = msg || (!gmCode ? 'Phòng chưa nối với quản trò. Nếu có quản trò, nhập mã của quản trò để quản trò cài đặt và bắt đầu vòng cho đội.'
+    : on ? `Đã nối với quản trò (mã ${gmCode}).`
+    : gmMiss ? `Không tìm thấy quản trò mã ${gmCode}. Kiểm tra lại mã. Vẫn đang thử nối lại...`
+    : `Đang nối với quản trò mã ${gmCode}...`);
+  $('gmLinkRow').hidden = on;
+  if (document.activeElement !== $('gmLobbyIn')) $('gmLobbyIn').value = gmCode;
+}
 // the next round's setup changed: everyone has to look again and say they're ready
 function unready() { players.forEach(p => { p.ready = false; }); }
 function renderFinal() {
@@ -168,23 +185,25 @@ function renderFinal() {
   tr.append(a, b); tb.appendChild(tr);
   $('resultText').value = `${label} (${names}): V1 ${results[0] || 0} + V2 ${results[1] || 0} + V3 ${results[2] || 0} = ${total} điểm`;
   $('copyBtn').textContent = 'Sao chép kết quả';
-  $('againBtn').hidden = role === 'client';
-  $('pickBtn').hidden = role === 'client';
-  $('endNote').textContent = role === 'client'
-    ? 'Quản trò giữ kết quả của đội. Đội có tổng số cá 3 vòng cao nhất thắng.'
-    : 'Sao chép dòng kết quả để lưu lại. Đội có tổng số cá 3 vòng cao nhất thắng.';
+  const gmRun = role === 'host' ? gmLinked() : gmOn, ctl = role === 'solo' || (role === 'host' && !gmRun);
+  $('againBtn').hidden = !ctl;
+  $('pickBtn').hidden = !ctl;
+  $('endNote').textContent = gmRun ? 'Kết quả của đội đã hiện trên bảng quản trò. Đội có tổng điểm 3 vòng cao nhất thắng.'
+    : role === 'client' ? 'Đội trưởng giữ kết quả của đội. Đội có tổng điểm 3 vòng cao nhất thắng.'
+    : 'Sao chép dòng kết quả để lưu lại. Đội có tổng điểm 3 vòng cao nhất thắng.';
 }
 function homeErr(msg) { const e = $('homeErr'); e.textContent = msg; e.hidden = !msg; }
 function resetNet() {
   try { if (peer) peer.destroy(); } catch (e) {}
-  peer = null; hostConn = null; conns.clear(); gotSnap = false; snaps = []; base = null; clkOff = null;
+  peer = null; hostConn = null; conns.clear(); gotSnap = false; gmConn = null; clearTimeout(gmTry); gmTry = null; gmOn = false; snaps = []; base = null; clkOff = null;
   lastSq = 0; lobbySq = 0; jit = 0; renderDelay = 80; snapGap = 33; rtt = 0; connType = '';
 }
 function backHome(msg) {
   resetNet(); role = null; phase = 'home'; G = null; R.fans = [];
   preview();
   show('home'); homeErr(msg || '');
-  $('hostBtn').disabled = false; $('joinBtn').disabled = false;
+  $('hostBtn').disabled = false; $('joinBtn').disabled = false; $('gmBtn').disabled = false;
+  gmRooms.clear(); $('gmRooms').textContent = '';
 }
 function getName() {
   const n = $('name').value.trim().slice(0, 16);

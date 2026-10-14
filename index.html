@@ -33,7 +33,7 @@
 <div class="overlay" id="home">
   <div class="card">
     <h1>Quạt cá <span>vào đĩa</span></h1>
-    <p class="lede">Cả đội quạt chung một sân, 3 vòng. Quản trò tạo phòng, chọn số cá, thời gian và cỡ đĩa cho từng vòng. Mỗi người chỉ được quạt vào đĩa tối đa số cá ÷ số người trong đội (100 cá, đội 4 người: 25 con/người). Mỗi con cá có 1–10 điểm ghi ở mặt sau.</p>
+    <p class="lede">Cả đội quạt chung một sân, 3 vòng. Đội trưởng tạo phòng và chơi cùng đội. Một quản trò mở bảng quản trò để lo mọi phòng cùng lúc: chọn số cá, thời gian và cỡ đĩa cho từng vòng, bắt đầu vòng, xem điểm các đội. Mỗi người chỉ được quạt vào đĩa tối đa số cá ÷ số người trong đội (100 cá, đội 4 người: 25 con/người). Mỗi con cá có 1–10 điểm ghi ở mặt sau.</p>
     <ul class="rules">
       <li><b>Nhấn giữ chuột / chạm giữ</b>: giơ quạt lên. Giữ càng lâu quạt càng cao, đến một mức thì dừng.</li>
       <li><b>Thả ra</b>: đập quạt xuống đất, gió tỏa tròn quanh chỗ đập. Quạt giơ càng cao, gió càng mạnh, cá bay càng xa.</li>
@@ -42,14 +42,44 @@
       <li><b>Vòng 3 · Khó</b>: đĩa trôi, có gió ngang, đập quạt trúng cá bị trừ giây.</li>
     </ul>
     <div class="field"><label for="name">Tên của bạn</label><input id="name" maxlength="16" placeholder="VD: Minh Anh" autocomplete="off"></div>
-    <button class="go" id="hostBtn" type="button">Tạo phòng (quản trò)</button>
-    <div class="or">hoặc vào phòng để chơi</div>
+    <div class="field"><label for="gmIn">Mã quản trò (bỏ trống nếu không có)</label><input class="code" id="gmIn" maxlength="4" placeholder="WXYZ" autocomplete="off"></div>
+    <button class="go" id="hostBtn" type="button">Tạo phòng (đội trưởng)</button>
+    <div class="or">hoặc vào phòng của đội để chơi</div>
     <div class="row">
       <div class="field"><label for="codeIn">Mã phòng</label><input class="code" id="codeIn" maxlength="4" placeholder="ABCD" autocomplete="off"></div>
       <button class="ghost" id="joinBtn" type="button" style="flex:0 0 auto">Vào phòng</button>
     </div>
     <p class="err" id="homeErr" hidden></p>
-    <button class="link" id="soloBtn" type="button">Chơi thử một mình</button>
+    <div class="row links">
+      <button class="link" id="gmBtn" type="button">Mở bảng quản trò</button>
+      <button class="link" id="soloBtn" type="button">Chơi thử một mình</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quản trò's board: every room linked to this code -->
+<div class="overlay" id="gmPanel" hidden>
+  <div class="card wide">
+    <div class="gmhead">
+      <div>
+        <h2>Bảng quản trò</h2>
+        <p class="lede">Đội trưởng nhập mã này khi tạo phòng (hoặc trong phòng chờ) để phòng hiện ở đây. Giữ tab này mở suốt buổi chơi.</p>
+      </div>
+      <div class="codebox"><span class="lbl">Mã quản trò</span><span class="bigcode" id="gmCode">----</span></div>
+    </div>
+    <div class="row">
+      <button class="go" id="gmStartAll" type="button">Bắt đầu mọi phòng đã sẵn sàng</button>
+      <button class="ghost" id="gmClose" type="button">Đóng bảng</button>
+    </div>
+    <div id="gmBoardBox" hidden>
+      <span class="lbl">Bảng điểm</span>
+      <table class="tbl board">
+        <thead><tr><th>#</th><th>Đội</th><th>Đang</th><th>V1</th><th>V2</th><th>V3</th><th>Tổng</th></tr></thead>
+        <tbody id="gmBoard"></tbody>
+      </table>
+    </div>
+    <p class="note" id="gmEmpty">Chưa có phòng nào nối vào. Gửi mã quản trò cho các đội trưởng.</p>
+    <div class="rooms" id="gmRooms"></div>
   </div>
 </div>
 
@@ -77,6 +107,14 @@
         <div class="field"><label for="setPlate">Cỡ đĩa</label><select id="setPlate"></select></div>
       </div>
     </div>
+    <div class="setbox" id="gmBox" hidden>
+      <span class="lbl">Quản trò</span>
+      <p class="note" id="gmState"></p>
+      <div class="row" id="gmLinkRow">
+        <input class="code" id="gmLobbyIn" maxlength="4" placeholder="WXYZ" autocomplete="off" aria-label="Mã quản trò">
+        <button class="ghost" id="gmLinkBtn" type="button">Nối</button>
+      </div>
+    </div>
     <div class="setbox" id="roomBox" hidden>
       <div class="row"><label for="maxSel">Số người chơi tối đa</label><select id="maxSel"></select></div>
     </div>
@@ -94,7 +132,7 @@
     <h2>Xong 3 vòng!</h2>
     <p class="lede" id="endWho"></p>
     <table class="tbl"><tbody id="endTbl"></tbody></table>
-    <input class="result-text" id="resultText" readonly aria-label="Kết quả để gửi quản trò">
+    <input class="result-text" id="resultText" readonly aria-label="Kết quả của đội">
     <div class="row">
       <button class="go" id="copyBtn" type="button" style="flex:1">Sao chép kết quả</button>
       <button class="ghost" id="againBtn" type="button" style="flex:1">Chơi lại từ đầu</button>
@@ -112,6 +150,7 @@
 <script src="js/input.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/network.js"></script>
+<script src="js/gm.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
