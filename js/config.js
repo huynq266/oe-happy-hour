@@ -28,7 +28,7 @@ const ROUND_TIMES = [0, 60, 120, 180]; // default time for rounds 1, 2, 3 (secon
 // the host's last settings, kept as next time's starting values (renamed whenever the defaults change, so the new ones show)
 const SETTINGS_KEY = 'quatca-caidat-2';
 const FISH_MIN = 10, FISH_MAX = 200, FISH_STEP = 10; // fish count is a multiple of 10: one tenth of the fish for each point value 1..10
-const TIME_OPTS = [30, 60, 90, 120, 180, 240, 300, 420, 600]; // seconds
+const TIME_MIN = 10, TIME_MAX = 1800; // how long a round may last, in seconds (the time picker's range)
 const PLATE_OPTS = [[0.6, 'Rất nhỏ'], [0.8, 'Nhỏ'], [1, 'Vừa'], [1.3, 'To'], [1.6, 'Rất to']]; // × the round's own plate size
 const $ = id => document.getElementById(id);
 const cv = $('cv'), ctx = cv.getContext('2d');

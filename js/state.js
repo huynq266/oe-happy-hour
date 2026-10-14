@@ -34,7 +34,7 @@ function cleanSettings(s) {
     const o = rs[r] && typeof rs[r] === 'object' ? rs[r] : {};
     out.rounds[r] = {
       fish: Math.round(Math.min(FISH_MAX, Math.max(FISH_MIN, +o.fish || DEFAULT_ROUND.fish)) / FISH_STEP) * FISH_STEP,
-      time: TIME_OPTS.includes(+o.time) ? +o.time : ROUND_TIMES[r],
+      time: Math.round(Math.min(TIME_MAX, Math.max(TIME_MIN, +o.time || ROUND_TIMES[r]))),
       plate: PLATE_OPTS.some(p => p[0] === +o.plate) ? +o.plate : DEFAULT_ROUND.plate };
   }
   return out;
@@ -89,6 +89,14 @@ function hitsFish(f, x, y) {
   const lx = c * dx + s * dy, ly = -s * dx + c * dy;
   return (lx / 19) ** 2 + (ly / 9) ** 2 < 1;
 }
+// A time picker: a minutes box and a seconds box (ids <p>Min and <p>Sec) holding one value in seconds
+function timeOf(p) { return (+$(p + 'Min').value || 0) * 60 + (+$(p + 'Sec').value || 0); }
+function showTime(p, secs, disabled, force) { // leaves a box being typed in alone unless forced
+  for (const [k, v] of [['Min', Math.floor(secs / 60)], ['Sec', secs % 60]]) {
+    const el = $(p + k); if (disabled !== undefined) el.disabled = disabled; if (force || document.activeElement !== el) el.value = v;
+  }
+}
+function bindTime(p, fn) { for (const k of ['Min', 'Sec']) $(p + k).addEventListener('change', () => fn(timeOf(p))); } // fn(seconds)
 function fmtTime(t) { t = Math.max(0, Math.ceil(t)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); }
 function nameOf(slot) { const p = players.find(p => p.slot === slot); return p ? p.name : '?'; }
 function num(v, lo, hi) { v = +v; return Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : 0; }

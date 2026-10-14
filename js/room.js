@@ -167,17 +167,17 @@ function buildBoard() {
   for (let n = 1; n <= TEAM_NO_MAX; n++) opt($('bdFirst'), n, 'Đội ' + n);
   for (let n = 1; n <= MAX_PLAYERS; n++) opt($('bdMax'), n, n + ' người');
   for (let r = 1; r <= 3; r++) opt($('bdRound'), r, '');
-  for (const t of TIME_OPTS) opt($('bdTime'), t, fmtTime(t));
   for (const [k, label] of PLATE_OPTS) opt($('bdPlate'), k, label);
   Object.assign($('bdFish'), { min: FISH_MIN, max: FISH_MAX, step: FISH_STEP });
   $('bdTeams').addEventListener('change', () => setTeams(+$('bdTeams').value, room.first));
   $('bdFirst').addEventListener('change', () => setTeams(room.teams.length, +$('bdFirst').value));
   $('bdMax').addEventListener('change', () => setSetting('max', +$('bdMax').value));
   $('bdRound').addEventListener('change', () => setRound(+$('bdRound').value));
-  for (const key of ['fish', 'time', 'plate']) {
+  for (const key of ['fish', 'plate']) {
     const el = $('bd' + key[0].toUpperCase() + key.slice(1));
     el.addEventListener('change', () => { setSetting(key, +el.value); el.value = roundSet(room.next)[key]; }); // fish count rounded to a multiple of 10
   }
+  bindTime('bdTime', s => { setSetting('time', s); showTime('bdTime', roundSet(room.next).time, undefined, true); }); // kept within TIME_MIN..TIME_MAX
   // starting while some players haven't said they're ready takes a second click
   let armed = null;
   $('bdStart').addEventListener('click', () => {
@@ -208,11 +208,11 @@ function fillBoard() {
   const live = !!room.live, S = roundSet(room.next);
   $('bdCode').textContent = roomCode || '----';
   $('bdLink').value = roomLink();
-  $('bdHost').textContent = hostName;
   for (const [id, v] of [['bdTeams', room.teams.length], ['bdFirst', room.first], ['bdMax', settings.maxPlayers], ['bdRound', room.next],
-    ['bdFish', S.fish], ['bdTime', S.time], ['bdPlate', S.plate]]) {
+    ['bdFish', S.fish], ['bdPlate', S.plate]]) {
     const el = $(id); el.disabled = live; if (document.activeElement !== el) el.value = v;
   }
+  showTime('bdTime', S.time, live);
   [...$('bdTeams').options].forEach(o => { o.disabled = room.first + +o.value - 1 > TEAM_NO_MAX; });
   const last = room.teams.length - 1;
   $('bdTeamsHint').textContent = room.teams.length ? `Phòng này: Đội ${room.first}${last ? '–' + (room.first + last) : ''}` : '';

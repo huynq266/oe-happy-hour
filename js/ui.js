@@ -124,10 +124,10 @@ function renderLobby() {
 // refreshed, so typing in the fish box isn't interrupted.
 function buildSettings() {
   $('setFish').min = FISH_MIN; $('setFish').max = FISH_MAX; $('setFish').step = FISH_STEP;
-  for (const s of TIME_OPTS) { const o = document.createElement('option'); o.value = s; o.textContent = fmtTime(s); $('setTime').appendChild(o); }
   for (const [k, label] of PLATE_OPTS) { const o = document.createElement('option'); o.value = k; o.textContent = label; $('setPlate').appendChild(o); }
-  for (const [id, key] of [['setFish', 'fish'], ['setTime', 'time'], ['setPlate', 'plate']])
+  for (const [id, key] of [['setFish', 'fish'], ['setPlate', 'plate']])
     $(id).addEventListener('change', () => { settings.rounds[nextRound][key] = +$(id).value; unready(); settingsChanged(); $(id).value = roundSet(nextRound)[key]; }); // shows the count rounded to a multiple of 10
+  bindTime('setTime', s => { settings.rounds[nextRound].time = s; unready(); settingsChanged(); showTime('setTime', roundSet(nextRound).time, undefined, true); });
 }
 function settingsChanged() {
   settings = cleanSettings(settings); // keeps a typed fish count in range
@@ -137,8 +137,9 @@ function settingsChanged() {
 function fillSettings() {
   const S = roundSet(nextRound);
   $('setLabel').textContent = `Cài đặt vòng ${nextRound}`;
-  for (const [id, v] of [['setFish', S.fish], ['setTime', S.time], ['setPlate', S.plate]])
+  for (const [id, v] of [['setFish', S.fish], ['setPlate', S.plate]])
     if (document.activeElement !== $(id)) $(id).value = v;
+  showTime('setTime', S.time);
 }
 // the next round's setup changed: everyone has to look again and say they're ready
 function unready() { players.forEach(p => { p.ready = false; }); }

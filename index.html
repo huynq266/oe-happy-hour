@@ -3,10 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Lụm Cá – Đồng Đội</title>
+<title>Cá Bay – Đồng Đội</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Be+Vietnam+Pro:wght@400;600&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#c8161d">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -32,7 +36,7 @@
 
 <div class="overlay" id="home">
   <div class="card">
-    <h1>Lụm <span>cá</span></h1>
+    <h1>Cá <span>bay</span></h1>
     <p class="lede">Mỗi đội quạt chung một sân, 3 vòng. Host mở phòng cho vài đội, gửi link cho các đội: mỗi người mở link, nhập tên rồi chọn đội của mình. Mỗi người chỉ được quạt vào đĩa tối đa số cá ÷ số người trong đội (100 cá, đội 4 người: 25 con/người). Mỗi con cá có số điểm từ 1-10.</p>
     <ul class="rules">
       <li><b>Nhấp chuột</b> để đập quạt. Quạt giơ càng cao, gió càng mạnh.</li>
@@ -71,10 +75,9 @@
   <div class="card wide">
     <div class="bhead">
       <div>
-        <h2>Phòng của <span id="bdHost"></span></h2>
+        <h2>Mã phòng <span class="bigcode" id="bdCode">----</span></h2>
         <p class="lede">Gửi link cho các đội: mỗi người mở link, nhập tên rồi chọn đội của mình. Giữ tab này mở suốt buổi chơi, vì máy này chạy sân của mọi đội trong phòng.</p>
       </div>
-      <div class="codebox"><span class="lbl">Mã phòng</span><span class="bigcode" id="bdCode">----</span></div>
     </div>
     <div class="row">
       <input class="result-text" id="bdLink" readonly aria-label="Link vào phòng" style="flex:1 1 260px">
@@ -91,7 +94,7 @@
       <div class="row">
         <div class="field"><label for="bdRound">Chơi vòng</label><select id="bdRound"></select></div>
         <div class="field"><label for="bdFish">Số cá</label><input id="bdFish" type="number"></div>
-        <div class="field"><label for="bdTime">Thời gian</label><select id="bdTime"></select></div>
+        <div class="field"><label for="bdTimeMin">Thời gian</label><div class="tp"><input id="bdTimeMin" type="number" min="0" max="30" inputmode="numeric" aria-label="Phút"><span>:</span><input id="bdTimeSec" type="number" min="0" max="59" step="5" inputmode="numeric" aria-label="Giây"></div></div>
         <div class="field"><label for="bdPlate">Cỡ đĩa</label><select id="bdPlate"></select></div>
       </div>
     </div>
@@ -133,7 +136,7 @@
       <span class="lbl" id="setLabel">Cài đặt vòng 1</span>
       <div class="row">
         <div class="field"><label for="setFish">Số cá</label><input id="setFish" type="number" step="10"></div>
-        <div class="field"><label for="setTime">Thời gian</label><select id="setTime"></select></div>
+        <div class="field"><label for="setTimeMin">Thời gian</label><div class="tp"><input id="setTimeMin" type="number" min="0" max="30" inputmode="numeric" aria-label="Phút"><span>:</span><input id="setTimeSec" type="number" min="0" max="59" step="5" inputmode="numeric" aria-label="Giây"></div></div>
         <div class="field"><label for="setPlate">Cỡ đĩa</label><select id="setPlate"></select></div>
       </div>
     </div>

@@ -41,6 +41,7 @@ h3{font-family:var(--font-display);font-weight:800;font-size:18px;margin:0;}
 .field{display:flex;flex-direction:column;gap:4px;flex:1 1 140px;min-width:0;}
 label,.lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
 input,select{font:inherit;font-size:16px;padding:10px 12px;border:2px solid #d9d2c3;border-radius:10px;background:#fff;color:var(--ink);min-width:0;width:100%;}
+.tp{display:flex;align-items:center;gap:2px;}.tp input{text-align:center;padding-left:4px;padding-right:0;}.tp span{font-weight:800;color:var(--ink);}
 input.code{font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:.2em;text-transform:uppercase;}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--bamboo);outline-offset:2px;}
 button{font-family:var(--font-display);font-weight:800;font-size:19px;border:0;border-radius:12px;padding:10px 16px;cursor:pointer;color:var(--ink);}
@@ -106,7 +107,7 @@ button:disabled{opacity:.5;cursor:default;}
 .card.wide{max-width:1100px;}
 .bhead{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
 .bhead > div:first-child{flex:1 1 320px;display:flex;flex-direction:column;gap:6px;}
-.bhead .codebox{flex-direction:column;align-items:flex-start;gap:4px;}
+.bhead h2 .bigcode{font-size:1.4em;vertical-align:-.08em;}
 .tbl.board th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);text-align:left;padding:4px 2px;border-bottom:1px solid #e3dccd;}
 .tbl.board th:nth-child(n+5),.tbl.board td:nth-child(n+5){text-align:right;}
 .tbl.board td:first-child{width:28px;color:var(--ink-soft);}
