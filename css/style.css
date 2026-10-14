@@ -115,3 +115,4 @@ button:disabled{opacity:.5;cursor:default;}
 .room .rstart{font-size:16px;}
 .room .ragain{font-size:15px;}
 .room .rall{align-self:flex-start;}
+#gmLinkRow input{flex:1 1 120px;width:auto;}

@@ -47,9 +47,9 @@ function renderChips() {
   }
 }
 function renderLobby() {
-  // ctl: this screen sets up and starts the rounds. That's the quản trò's board when the room is linked to one,
-  // otherwise the đội trưởng (or the solo player).
-  const solo = role === 'solo', cap = role === 'host', gmRun = cap ? gmLinked() : gmOn, ctl = solo || (cap && !gmRun), C = ROUNDS[nextRound];
+  // ctl: this screen sets up and starts the rounds. A room given a quản trò's code is run from the quản trò's board
+  // only (even while it's still linking); otherwise the đội trưởng (or the solo player) runs it.
+  const solo = role === 'solo', cap = role === 'host', gmRun = cap ? !!gmCode : gmOn, ctl = solo || (cap && !gmRun), C = ROUNDS[nextRound];
   $('codeBox').hidden = solo;
   $('lobbyCode').textContent = roomCode || '----';
   // last round
@@ -128,6 +128,7 @@ function renderLobby() {
   $('lobbyNote').textContent = solo ? `Chơi thử một mình: bạn được quạt cả ${S.fish} con.`
     : cap && ctl ? (allReady ? '' : 'Chờ mọi người (cả bạn) bấm "Sẵn sàng" rồi mới bắt đầu được. ') +
       `Đội ${teamNo}. Gửi mã phòng cho đồng đội. Bạn là đội trưởng: vừa chơi vừa giữ phòng. Phòng chưa nối với quản trò nên bạn tự cài đặt và bắt đầu từng vòng. ${keepOpen}`
+    : cap && !gmLinked() ? `Đội ${teamNo}. Phòng đang chờ nối với quản trò: quản trò sẽ cài đặt và bắt đầu từng vòng. Nếu quản trò không vào được, bấm "Bỏ quản trò, tự điều khiển phòng". ${keepOpen}`
     : cap ? `Đội ${teamNo}. Gửi mã phòng cho đồng đội. Quản trò cài đặt và bắt đầu từng vòng, bạn chỉ cần bấm "Sẵn sàng" như mọi người. ${keepOpen}`
     : meP && meP.ready ? `Đội ${teamNo}. Chờ ${gmOn ? 'quản trò' : 'đội trưởng'} bắt đầu vòng ${nextRound}...`
     : `Đội ${teamNo}. Xem luật vòng ${nextRound} rồi bấm "Sẵn sàng".`;
@@ -163,6 +164,7 @@ function fillGM(msg) {
     : gmMiss ? `Không tìm thấy quản trò mã ${gmCode}. Kiểm tra lại mã. Vẫn đang thử nối lại...`
     : `Đang nối với quản trò mã ${gmCode}...`);
   $('gmLinkRow').hidden = on;
+  $('gmDropBtn').hidden = on || !gmCode;
   if (document.activeElement !== $('gmLobbyIn')) $('gmLobbyIn').value = gmCode;
 }
 // the next round's setup changed: everyone has to look again and say they're ready
@@ -185,7 +187,7 @@ function renderFinal() {
   tr.append(a, b); tb.appendChild(tr);
   $('resultText').value = `${label} (${names}): V1 ${results[0] || 0} + V2 ${results[1] || 0} + V3 ${results[2] || 0} = ${total} điểm`;
   $('copyBtn').textContent = 'Sao chép kết quả';
-  const gmRun = role === 'host' ? gmLinked() : gmOn, ctl = role === 'solo' || (role === 'host' && !gmRun);
+  const gmRun = role === 'host' ? !!gmCode : gmOn, ctl = role === 'solo' || (role === 'host' && !gmRun);
   $('againBtn').hidden = !ctl;
   $('pickBtn').hidden = !ctl;
   $('endNote').textContent = gmRun ? 'Kết quả của đội đã hiện trên bảng quản trò. Đội có tổng điểm 3 vòng cao nhất thắng.'

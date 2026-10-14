@@ -63,7 +63,7 @@ try {
     $('qtNote').hidden = false;
   }
 }
-const controls = () => role === 'solo' || (role === 'host' && !gmLinked()); // this screen sets up / starts the rounds
+const controls = () => role === 'solo' || (role === 'host' && !gmCode); // this screen sets up / starts the rounds
 $('teamSel').addEventListener('change', () => { teamNo = +$('teamSel').value; try { localStorage.setItem('quatca-team', teamNo); } catch (e) {} broadcast(lobbyMsg()); renderLobby(); });
 $('roundSel').addEventListener('change', () => { if (!controls()) return; nextRound = Math.min(3, Math.max(1, +$('roundSel').value | 0)); unready(); broadcast(lobbyMsg()); renderLobby(); });
 $('readyBtn').addEventListener('click', () => {
@@ -96,6 +96,13 @@ function linkFromLobby() {
   linkGM(); renderLobby();
 }
 $('gmLinkBtn').addEventListener('click', linkFromLobby);
+// đội trưởng: the quản trò can't get here, so the đội trưởng runs the room
+$('gmDropBtn').addEventListener('click', () => {
+  if (role !== 'host' || gmLinked()) return;
+  gmCode = ''; gmMiss = false; clearTimeout(gmTry); gmTry = null;
+  try { localStorage.setItem('quatca-gmjoin', ''); } catch (e) {}
+  broadcast(lobbyMsg()); onPhase();
+});
 $('gmLobbyIn').addEventListener('keydown', e => { if (e.key === 'Enter') linkFromLobby(); });
 // đội trưởng: the board's live view of the round (time left, score) once a second
 setInterval(() => { if (role === 'host' && G && (phase === 'count' || phase === 'play' || phase === 'over')) toGM(); }, 1000);

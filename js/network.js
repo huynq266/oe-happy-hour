@@ -9,7 +9,7 @@ function broadcast(m) {
   }
   if (m.k === 'l') toGM(); // the quản trò's board sees every lobby change
 }
-function lobbyMsg() { return { k: 'l', sq: ++netSq, ph: phase, players, host: hostName, gm: gmLinked(), set: settings, team: teamNo, next: nextRound, lr: lastRound, res: results.map(x => x || 0), last: lastPer, lastPts, pen: lastPen }; }
+function lobbyMsg() { return { k: 'l', sq: ++netSq, ph: phase, players, host: hostName, gm: !!gmCode, set: settings, team: teamNo, next: nextRound, lr: lastRound, res: results.map(x => x || 0), last: lastPer, lastPts, pen: lastPen }; }
 function makeCode() { const A = 'ABCDEFGHJKMNPQRSTUVWXYZ'; let s = ''; for (let i = 0; i < 4; i++) s += A[Math.floor(Math.random() * A.length)]; return s; }
 
 function hostRoom() {
@@ -95,8 +95,9 @@ function startRound() {
 }
 
 // ================= đội trưởng ↔ quản trò =================
-// The room links to the quản trò's board (by the quản trò's code) and keeps sending it the room's state. While
-// linked, the board sets up, starts and kicks; if the link drops the đội trưởng runs the room until it's back.
+// The room links to the quản trò's board (by the quản trò's code) and keeps sending it the room's state. The board
+// sets up, starts and kicks; the đội trưởng never does while the room has a quản trò's code, even when the link is
+// down (it keeps retrying). Dropping the code ("Bỏ quản trò") hands the room to the đội trưởng.
 let gmCode = '', gmConn = null, gmTry = null, gmMiss = false;
 const gmLinked = () => !!(gmConn && gmConn.open);
 function gmRetry() { if (!gmTry && role === 'host' && gmCode && !gmLinked()) gmTry = setTimeout(linkGM, 4000); }
@@ -109,7 +110,7 @@ function linkGM() {
   const giveUp = setTimeout(() => { if (!opened) { try { c.close(); } catch (e) {} gmRetry(); } }, 10000);
   c.on('open', () => {
     opened = true; clearTimeout(giveUp);
-    if (role !== 'host' || gmLinked()) { try { c.close(); } catch (e) {} return; }
+    if (role !== 'host' || gmLinked() || c.peer !== GM_PREFIX + gmCode) { try { c.close(); } catch (e) {} return; } // code changed / dropped meanwhile
     gmConn = c; gmMiss = false;
     broadcast(lobbyMsg()); onPhase(); // also tells the board everything
   });
