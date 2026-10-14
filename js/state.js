@@ -29,7 +29,7 @@ function roundSet(round) { return settings.rounds[round] || DEFAULT_ROUND; }
 // settings from storage or the network, made safe: anything missing or out of range falls back to the defaults
 function cleanSettings(s) {
   const src = s && typeof s === 'object' ? s : {}, rs = Array.isArray(src.rounds) ? src.rounds : [];
-  const out = { rounds: [null], maxPlayers: Math.round(Math.min(MAX_PLAYERS, Math.max(1, +src.maxPlayers || MAX_PLAYERS))) };
+  const out = { rounds: [null], maxPlayers: Math.round(Math.min(MAX_PLAYERS, Math.max(1, +src.maxPlayers || DEFAULT_MAX))) };
   for (let r = 1; r <= 3; r++) {
     const o = rs[r] && typeof rs[r] === 'object' ? rs[r] : {};
     out.rounds[r] = {

@@ -131,7 +131,7 @@ function buildSettings() {
 }
 function settingsChanged() {
   settings = cleanSettings(settings); // keeps a typed fish count in range
-  try { localStorage.setItem('quatca-settings', JSON.stringify(settings)); } catch (e) {} // next time's starting values
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {} // next time's starting values
   renderLobby();
 }
 function fillSettings() {

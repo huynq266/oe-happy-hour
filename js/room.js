@@ -47,9 +47,9 @@ function loadRoom() {
   return null;
 }
 function setupRoom(saved) {
-  room.first = Math.min(99, Math.max(1, saved ? saved.first | 0 || 1 : 1));
+  room.first = Math.min(TEAM_NO_MAX, Math.max(1, saved ? saved.first | 0 || 1 : 1));
   room.next = Math.min(3, Math.max(1, saved ? saved.next | 0 || 1 : 1));
-  const st = saved ? saved.teams.slice(0, MAX_TEAMS) : [{}, {}, {}, {}];
+  const st = saved ? saved.teams.slice(0, Math.min(MAX_TEAMS, TEAM_NO_MAX - room.first + 1)) : [{}, {}, {}, {}];
   room.teams = (st.length ? st : [{}]).map((s, i) => {
     const t = newTeam(room.first + i);
     if (Array.isArray(s.res)) t.results = s.res.map(x => x == null ? undefined : +x || 0);
@@ -67,7 +67,8 @@ function resetRoom() {
 // ---- what the quản trò does
 function setTeams(n, first) {
   if (room.live) return;
-  n = Math.min(MAX_TEAMS, Math.max(1, n | 0)); first = Math.min(99, Math.max(1, first | 0));
+  first = Math.min(TEAM_NO_MAX, Math.max(1, first | 0));
+  n = Math.min(MAX_TEAMS, TEAM_NO_MAX - first + 1, Math.max(1, n | 0)); // no team past Đội 10
   while (room.teams.length > n) {
     const t = room.teams.pop();
     for (const c of [...t.conns.values()]) toPick(c.conn, `Quản trò đã bỏ bớt Đội ${t.no}. Chọn lại đội nhé.`);
@@ -89,7 +90,7 @@ function setSetting(key, v) {
   if (room.live) return;
   if (key === 'max') settings.maxPlayers = v; else settings.rounds[room.next][key] = v;
   settings = cleanSettings(settings);
-  try { localStorage.setItem('quatca-settings', JSON.stringify(settings)); } catch (e) {}
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
   eachTeam(() => { if (key !== 'max') unready(); broadcast(lobbyMsg()); });
   hostDirty();
 }
@@ -163,7 +164,7 @@ function renderWatchBar(w) {
 function opt(sel, v, t) { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); }
 function buildBoard() {
   for (let n = 1; n <= MAX_TEAMS; n++) opt($('bdTeams'), n, n + ' đội');
-  for (let n = 1; n <= 30; n++) opt($('bdFirst'), n, 'Đội ' + n);
+  for (let n = 1; n <= TEAM_NO_MAX; n++) opt($('bdFirst'), n, 'Đội ' + n);
   for (let n = 1; n <= MAX_PLAYERS; n++) opt($('bdMax'), n, n + ' người');
   for (let r = 1; r <= 3; r++) opt($('bdRound'), r, '');
   for (const t of TIME_OPTS) opt($('bdTime'), t, fmtTime(t));
@@ -212,6 +213,7 @@ function fillBoard() {
     ['bdFish', S.fish], ['bdTime', S.time], ['bdPlate', S.plate]]) {
     const el = $(id); el.disabled = live; if (document.activeElement !== el) el.value = v;
   }
+  [...$('bdTeams').options].forEach(o => { o.disabled = room.first + +o.value - 1 > TEAM_NO_MAX; });
   const last = room.teams.length - 1;
   $('bdTeamsHint').textContent = room.teams.length ? `Phòng này: Đội ${room.first}${last ? '–' + (room.first + last) : ''}` : '';
   [...$('bdRound').options].forEach((o, i) => { o.textContent = `Vòng ${i + 1} · ${ROUNDS[i + 1].name}`; });

@@ -53,7 +53,7 @@ function frame(t) {
 // ================= buttons =================
 buildSettings(); buildBoard();
 // the host's / solo player's own settings from last time (a player gets the host's from the lobby messages)
-function loadSettings() { try { settings = cleanSettings(JSON.parse(localStorage.getItem('quatca-settings'))); } catch (e) { settings = cleanSettings(null); } }
+function loadSettings() { try { settings = cleanSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY))); } catch (e) { settings = cleanSettings(null); } }
 try { const n = localStorage.getItem('quatca-name'); if (n) $('name').value = n; } catch (e) {}
 // opened from a quản trò's link (?phong=CODE): the code is filled in, so the player only types their name. People
 // coming that way are players: no "Mở phòng" for them.
