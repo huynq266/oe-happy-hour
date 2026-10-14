@@ -94,14 +94,15 @@ function loseFish(f) {
   if (f.cBy >= 0 && G.cred[f.cBy] !== undefined) { G.cred[f.cBy]--; G.credPts[f.cBy] -= f.pts; }
   f.caught = false; f.cBy = -1; G.score -= f.pts; effect({ k: 't', x: Math.round(f.x), y: Math.round(f.y - 20), s: '-' + f.pts, b: 1 });
 }
-// End of a round with 2+ players: each must have at least one fish in the plate. If anyone has none, the team
-// loses as many points as the top scorer (most points; more fish on a tie) has fish in the plate.
+// End of a round with 2+ players: each must have at least one fish in the plate. For every player with none, the
+// team loses as many points as the top scorer (most points; more fish on a tie) has fish in the plate.
 function roundPenalty() {
   if (players.length < 2) return null;
   const empty = players.filter(p => !(G.cred[p.slot] > 0));
   if (!empty.length) return null;
   const top = players.slice().sort((a, b) => (G.credPts[b.slot] || 0) - (G.credPts[a.slot] || 0) || (G.cred[b.slot] || 0) - (G.cred[a.slot] || 0))[0];
-  return { n: G.cred[top.slot] || 0, top: top.name, empty: empty.map(p => p.name) };
+  const per = G.cred[top.slot] || 0;
+  return { n: per * empty.length, per, top: top.name, empty: empty.map(p => p.name) };
 }
 
 // A paper fish is light and flat, so the air matters more than gravity: drag grows with the square of its speed,

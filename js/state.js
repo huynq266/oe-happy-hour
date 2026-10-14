@@ -13,7 +13,7 @@ let lastRound = 0;          // round just finished (0 = none yet)
 let results = [];           // team score per finished round
 let lastPer = null;         // {slot: count} for the round just played
 let lastPts = null;         // {slot: points} for the round just played
-let lastPen = null;         // end-of-round penalty, if any: {n, top, empty: [names]}
+let lastPen = null;         // end-of-round penalty, if any: {n: total, per: points per empty player, top, empty: [names]}
 let G = null;               // authoritative sim (host / solo)
 let pops = [];
 // what the field shows: the sim's state (host / solo) or the interpolated snapshots (client). The host keeps one per team.

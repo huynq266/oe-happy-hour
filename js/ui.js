@@ -1,7 +1,7 @@
 // ================= HUD =================
 function updateHud() {
   const C = cfg();
-  $('roundPill').textContent = (role === 'host' ? `Đội ${teamNo} · ` : '') + `Vòng ${R.round}/3 · ${C.name}`; // the quản trò: the team being watched
+  $('roundPill').textContent = (role === 'host' ? `Đội ${teamNo} · ` : '') + `Vòng ${R.round}/3`; // the quản trò: the team being watched
   $('time').textContent = fmtTime(phase === 'count' ? roundSet(R.round).time : R.time);
   $('timePill').classList.toggle('hot', phase === 'play' && R.time <= 30);
   $('score').textContent = R.score; $('total').textContent = R.fish.reduce((a, f) => a + (f.pts || 0), 0); // points in the plate / on the field
@@ -64,21 +64,21 @@ function renderLobby() {
     if (lastPer && !solo) for (const p of players) if (lastPer[p.slot] !== undefined) ul.appendChild(dotLi(p.slot, p.name, `${lastPer[p.slot]} cá · ${(lastPts && lastPts[p.slot]) || 0} điểm`));
     if (lastPen) { // someone had no fish in the plate
       const li = document.createElement('li'); li.className = 'pen';
-      li.textContent = `Trừ ${lastPen.n} điểm: ${lastPen.empty.join(', ')} không có cá nào trong đĩa (bằng số cá của ${lastPen.top}, người cao điểm nhất).`;
+      li.textContent = `Trừ ${lastPen.n} điểm: ${lastPen.empty.join(', ')} không có cá nào trong đĩa (${lastPen.empty.length} người × ${lastPen.per} điểm, bằng số cá của ${lastPen.top}, người cao điểm nhất).`;
       ul.appendChild(li);
     }
   }
   // next round
   $('nextTag').textContent = `Vòng ${nextRound}/3`;
-  $('nextTitle').textContent = `Mức ${C.name}`;
+  $('nextTitle').textContent = C.title; // the player's heading for the round about to be played
   const S = roundSet(nextRound);
   const np = Math.max(1, players.length), share = Math.floor(S.fish / np), extra = S.fish % np;
   const shareTxt = extra ? `${share}–${share + 1}` : `${share}`;
   const rl = $('nextRules'); rl.textContent = '';
   const shareRule = players.length ? `tối đa ${shareTxt} con (${S.fish} ÷ ${np} người)` : `tối đa ${S.fish} ÷ số người chơi`;
   [`${S.fish} con cá, ${fmtTime(S.time)}, đĩa cỡ ${plateName(S.plate).toLowerCase()}. Mỗi người chỉ được quạt vào đĩa ${shareRule}. Đủ phần rồi mà vẫn quạt thêm cá vào thì cá bị bật ra.`,
-    `Mỗi con cá có từ 1 đến 10 điểm, ghi ở mặt sau con cá: mỗi mức điểm có ${S.fish / 10} con. Cá vào đĩa thì đội được cộng điểm của con đó, bay ra thì bị trừ lại.`,
-    ...(players.length > 1 ? ['Hết vòng, mỗi người phải có ít nhất 1 con cá trong đĩa. Nếu có người không có con nào, đội bị trừ số điểm bằng số cá của người cao điểm nhất đội.'] : []),
+    `Mỗi con cá có từ 1 đến 10 điểm, mỗi mức điểm có ${S.fish / 10} con. Cá vào đĩa thì đội được cộng điểm của con đó, bay ra thì bị trừ lại.`,
+    ...(players.length > 1 ? ['Hết vòng, mỗi người phải có ít nhất 1 con cá trong đĩa. Cứ mỗi người không có con nào, đội bị trừ số điểm bằng số cá của người cao điểm nhất đội.'] : []),
     ...C.rules].forEach(t => { const li = document.createElement('li'); li.textContent = t; rl.appendChild(li); });
   // settings for the round about to be played (solo; the quản trò sets them on the board)
   $('setBox').hidden = !host;
@@ -88,7 +88,7 @@ function renderLobby() {
   const rs = $('roundSel'); rs.textContent = '';
   for (let r = 1; r <= 3; r++) {
     const o = document.createElement('option'); o.value = r;
-    o.textContent = `Vòng ${r} · ${ROUNDS[r].name}` + (results[r - 1] != null ? ` (đã chơi: ${results[r - 1]} điểm)` : '');
+    o.textContent = `Vòng ${r}` + (results[r - 1] != null ? ` (đã chơi: ${results[r - 1]} điểm)` : '');
     rs.appendChild(o);
   }
   rs.value = nextRound;
@@ -136,7 +136,7 @@ function settingsChanged() {
 }
 function fillSettings() {
   const S = roundSet(nextRound);
-  $('setLabel').textContent = `Cài đặt vòng ${nextRound} · ${ROUNDS[nextRound].name}`;
+  $('setLabel').textContent = `Cài đặt vòng ${nextRound}`;
   for (const [id, v] of [['setFish', S.fish], ['setTime', S.time], ['setPlate', S.plate]])
     if (document.activeElement !== $(id)) $(id).value = v;
 }
@@ -150,7 +150,7 @@ function renderFinal() {
   const tb = $('endTbl'); tb.textContent = '';
   for (let r = 1; r <= 3; r++) {
     const tr = document.createElement('tr');
-    const a = document.createElement('td'); a.textContent = `Vòng ${r} · ${ROUNDS[r].name}`;
+    const a = document.createElement('td'); a.textContent = `Vòng ${r}`;
     const b = document.createElement('td'); b.textContent = (results[r - 1] || 0) + ' điểm';
     tr.append(a, b); tb.appendChild(tr);
   }

@@ -245,7 +245,7 @@ function onClientData(d, timer) {
     results = Array.isArray(d.res) ? d.res.map(x => x | 0) : [];
     lastPer = d.last && typeof d.last === 'object' ? d.last : null;
     lastPts = d.lastPts && typeof d.lastPts === 'object' ? d.lastPts : null;
-    lastPen = d.pen && typeof d.pen === 'object' ? { n: d.pen.n | 0, top: String(d.pen.top || '').slice(0, 16), empty: (Array.isArray(d.pen.empty) ? d.pen.empty : []).map(s => String(s).slice(0, 16)) } : null;
+    lastPen = d.pen && typeof d.pen === 'object' ? { n: d.pen.n | 0, per: d.pen.per | 0, top: String(d.pen.top || '').slice(0, 16), empty: (Array.isArray(d.pen.empty) ? d.pen.empty : []).map(s => String(s).slice(0, 16)) } : null;
     if (d.ph === 'lobby' || d.ph === 'final') { phase = d.ph; gotSnap = false; onPhase(); }
     else if (phase === 'lobby') renderLobby(); else renderChips();
   }

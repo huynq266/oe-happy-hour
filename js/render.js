@@ -253,7 +253,7 @@ function draw(dt) {
     ctx.font = '600 18px "Be Vietnam Pro", sans-serif'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(251,248,241,.9)'; ctx.fillStyle = '#2b2823';
     ctx.strokeText(small, LW / 2, LH / 2 + 56); ctx.fillText(small, LW / 2, LH / 2 + 56);
   };
-  if (phase === 'count') banner(String(Math.max(1, Math.ceil(R.cd))), `Vòng ${R.round} · ${cfg().name}`);
+  if (phase === 'count') banner(String(Math.max(1, Math.ceil(R.cd))), `Vòng ${R.round}`);
   if (phase === 'over') banner('Hết giờ!', `Vòng ${R.round}: ${R.score} điểm trong đĩa`);
   if (phase === 'count' || phase === 'play') {
     const k = role === 'client' ? 1 : 1 - Math.exp(-18 * dt); // client fans are already interpolated

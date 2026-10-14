@@ -4,15 +4,14 @@ const SLAP_R = 120, PLATE_HIT_R = 75, MAX_PLAYERS = 10; // slam reach on the gro
 const CHARGE_MS = 1000, FAN_LIFT = 60; // hold to raise the fan (full height after CHARGE_MS), release to slam: the only way to move fish
 const slamR = lv => SLAP_R * (1 + 0.8 * lv);   // slam reach grows with fan height (lv 0..1)
 const ROUNDS = [null,
-  { name: 'Dễ', rim: 0, rx: 72, ry: 45, move: false, cross: false, wind: false, foul: false, plateHit: 0.8,
-    rules: ['Cá rơi vào đĩa là được tính điểm. Quạt cẩn thận không là kẹt, hay là bay mất cá của đồng đội nha.',
-            'Gió của bạn không làm xê dịch con cá mà đồng đội đang quạt.'] },
-  { name: 'Thường', rim: 10, rx: 60, ry: 38, move: false, cross: true, wind: false, foul: false, plateHit: 2,
+  { title: 'Vòng này dễ lắm này', rim: 0, rx: 72, ry: 45, move: false, cross: false, wind: false, foul: false, plateHit: 0.8,
+    rules: ['Cá rơi vào đĩa là được tính điểm. Quạt cẩn thận không là kẹt, hay là bay mất cá của đồng đội nha.'] },
+  { title: 'Khó hơn xíu này', rim: 10, rx: 60, ry: 38, move: false, cross: true, wind: false, foul: false, plateHit: 2,
     rules: ['Đĩa nhỏ hơn và có vành cao hơn: cá bay thấp đập vào thành đĩa sẽ bật ra, cá trượt sát đất thì chui xuống dưới mép đĩa và kẹt lại. Đập quạt phía sau cá cho cá bay lên mới lọt vào đĩa.',
             'Cá trong đĩa dễ bay ra hơn: đập quạt cách đĩa khá xa vẫn có thể hất mất cá, bị trừ lại điểm của con cá đó. Hết giờ, cá còn trong đĩa mới được tính.',
             'Quạt của bạn giờ thổi bay cả cá mà đồng đội đang quạt.'] },
-  { name: 'Khó', rim: 10, rx: 50, ry: 32, move: true, cross: true, wind: true, foul: true, plateHit: 2,
-    rules: ['Gồm tất cả luật của vòng Thường.',
+  { title: 'Độ khó asian', rim: 10, rx: 50, ry: 32, move: true, cross: true, wind: true, foul: true, plateHit: 2,
+    rules: ['Gồm tất cả luật của vòng 2.',
             'Đĩa nhỏ hơn nữa và trôi qua trôi lại.',
             'Gió ngang đổi hướng liên tục, thổi lệch cá đang bay. Ô "Gió" trên màn hình cho biết chiều và độ mạnh.',
             'Đập quạt trúng cá: cả đội bị trừ 1 giây.'] }

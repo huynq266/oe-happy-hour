@@ -216,8 +216,8 @@ function fillBoard() {
   [...$('bdTeams').options].forEach(o => { o.disabled = room.first + +o.value - 1 > TEAM_NO_MAX; });
   const last = room.teams.length - 1;
   $('bdTeamsHint').textContent = room.teams.length ? `Phòng này: Đội ${room.first}${last ? '–' + (room.first + last) : ''}` : '';
-  [...$('bdRound').options].forEach((o, i) => { o.textContent = `Vòng ${i + 1} · ${ROUNDS[i + 1].name}`; });
-  $('bdSetLbl').textContent = `Cài đặt vòng ${room.next} · ${ROUNDS[room.next].name}`;
+  [...$('bdRound').options].forEach((o, i) => { o.textContent = `Vòng ${i + 1}`; });
+  $('bdSetLbl').textContent = `Cài đặt vòng ${room.next}`;
   // start
   const go = room.teams.filter(t => inGame(t) && t.phase === 'lobby'), waiting = go.filter(t => !teamReady(t));
   $('bdStart').hidden = live;
