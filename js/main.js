@@ -50,62 +50,17 @@ for (let i = 1; i <= 10; i++) { const o = document.createElement('option'); o.va
 buildSettings();
 // the host's / solo player's own settings from last time (a player gets the host's from the lobby messages)
 function loadSettings() { try { settings = cleanSettings(JSON.parse(localStorage.getItem('quatca-settings'))); } catch (e) { settings = cleanSettings(null); } }
-try {
-  const n = localStorage.getItem('quatca-name'); if (n) $('name').value = n; const t = +localStorage.getItem('quatca-team'); if (t) teamNo = t;
-  const g = localStorage.getItem('quatca-gmjoin'); if (g) $('gmIn').value = g;
-} catch (e) {}
-// opened from the quản trò's link (?qt=CODE): the code is filled in, so the đội trưởng only types their name
-{
-  const qt = (new URLSearchParams(location.search).get('qt') || '').toUpperCase().replace(/[^A-Z]/g, '');
-  if (qt.length === 4) {
-    $('gmIn').value = qt;
-    $('qtNote').textContent = `Bạn mở link của quản trò (mã ${qt}). Nhập tên rồi bấm "Tạo phòng" là phòng tự nối với quản trò.`;
-    $('qtNote').hidden = false;
-  }
-}
-const controls = () => role === 'solo' || (role === 'host' && !gmCode); // this screen sets up / starts the rounds
+try { const n = localStorage.getItem('quatca-name'); if (n) $('name').value = n; const t = +localStorage.getItem('quatca-team'); if (t) teamNo = t; } catch (e) {}
 $('teamSel').addEventListener('change', () => { teamNo = +$('teamSel').value; try { localStorage.setItem('quatca-team', teamNo); } catch (e) {} broadcast(lobbyMsg()); renderLobby(); });
-$('roundSel').addEventListener('change', () => { if (!controls()) return; nextRound = Math.min(3, Math.max(1, +$('roundSel').value | 0)); unready(); broadcast(lobbyMsg()); renderLobby(); });
+$('roundSel').addEventListener('change', () => { if (role === 'client') return; nextRound = Math.min(3, Math.max(1, +$('roundSel').value | 0)); unready(); broadcast(lobbyMsg()); renderLobby(); });
 $('readyBtn').addEventListener('click', () => {
   const p = players.find(p => p.slot === mySlot);
-  if (role === 'host' && p && phase === 'lobby') { p.ready = !p.ready; broadcast(lobbyMsg()); renderLobby(); return; } // the đội trưởng
   if (role !== 'client' || !p || !hostConn || !hostConn.open) return;
   p.ready = !p.ready; renderLobby(); // shown right away; the host's lobby message confirms it
   hostConn.send({ k: 'rd', v: p.ready });
 });
-$('pickBtn').addEventListener('click', () => { if (!controls()) return; G = null; phase = 'lobby'; broadcast(lobbyMsg()); onPhase(); });
+$('pickBtn').addEventListener('click', () => { if (role === 'client') return; G = null; phase = 'lobby'; broadcast(lobbyMsg()); onPhase(); });
 $('hostBtn').addEventListener('click', hostRoom);
-$('gmIn').addEventListener('keydown', e => { if (e.key === 'Enter') hostRoom(); });
-$('gmBtn').addEventListener('click', () => openBoard());
-$('gmClose').addEventListener('click', () => backHome());
-$('gmCopy').addEventListener('click', () => {
-  const ok = () => $('gmCopy').textContent = 'Đã sao chép';
-  const fallback = () => { $('gmLink').select(); $('gmCopy').textContent = 'Đã chọn, nhấn Ctrl+C'; };
-  try { navigator.clipboard.writeText($('gmLink').value).then(ok, fallback); } catch (e) { fallback(); }
-  setTimeout(() => { $('gmCopy').textContent = 'Sao chép link'; }, 2000);
-});
-$('gmStartAll').addEventListener('click', () => {
-  for (const r of gmRooms.values()) if (r.on && r.st && r.st.ph === 'lobby' && allReady(r.st)) cmd(r, { a: 'start' });
-});
-// đội trưởng: link the room to a quản trò (or fix a mistyped code) from the lobby
-function linkFromLobby() {
-  const c = $('gmLobbyIn').value.trim().toUpperCase().replace(/[^A-Z]/g, '');
-  if (c.length !== 4) { fillGM('Mã quản trò gồm 4 chữ cái.'); return; }
-  gmCode = c; gmMiss = false;
-  try { localStorage.setItem('quatca-gmjoin', c); } catch (e) {}
-  linkGM(); renderLobby();
-}
-$('gmLinkBtn').addEventListener('click', linkFromLobby);
-// đội trưởng: the quản trò can't get here, so the đội trưởng runs the room
-$('gmDropBtn').addEventListener('click', () => {
-  if (role !== 'host' || gmLinked()) return;
-  gmCode = ''; gmMiss = false; clearTimeout(gmTry); gmTry = null;
-  try { localStorage.setItem('quatca-gmjoin', ''); } catch (e) {}
-  broadcast(lobbyMsg()); onPhase();
-});
-$('gmLobbyIn').addEventListener('keydown', e => { if (e.key === 'Enter') linkFromLobby(); });
-// đội trưởng: the board's live view of the round (time left, score) once a second
-setInterval(() => { if (role === 'host' && G && (phase === 'count' || phase === 'play' || phase === 'over')) toGM(); }, 1000);
 $('joinBtn').addEventListener('click', joinRoom);
 $('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
 $('soloBtn').addEventListener('click', () => {
@@ -115,7 +70,7 @@ $('soloBtn').addEventListener('click', () => {
 });
 $('startBtn').addEventListener('click', startRound);
 $('againBtn').addEventListener('click', () => {
-  if (!controls()) return;
+  if (role === 'client') return;
   resetGame(); G = null; phase = 'lobby'; broadcast(lobbyMsg()); onPhase();
 });
 $('copyBtn').addEventListener('click', () => {

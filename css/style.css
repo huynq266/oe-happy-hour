@@ -94,25 +94,3 @@ button:disabled{opacity:.5;cursor:default;}
 .net{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:5;font-family:var(--font-body);font-weight:600;font-size:11px;line-height:1.35;
   color:#fbf8f1;background:rgba(43,40,35,.72);padding:4px 8px;border-radius:8px;pointer-events:none;max-width:calc(100vw - 180px);}
 .players li.pen{background:#fde3e3;color:#7a0e12;font-weight:400;font-size:12.5px;line-height:1.45;}
-/* home links */
-.row.links{justify-content:center;gap:18px;}
-/* quản trò's board */
-.card.wide{max-width:1100px;}
-.gmhead{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
-.gmhead > div:first-child{flex:1 1 320px;display:flex;flex-direction:column;gap:6px;}
-.gmhead .codebox{flex-direction:column;align-items:flex-start;gap:4px;}
-.tbl.board th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);text-align:left;padding:4px 2px;border-bottom:1px solid #e3dccd;}
-.tbl.board th:nth-child(n+4),.tbl.board td:nth-child(n+4){text-align:right;}
-.tbl.board td:first-child{width:28px;color:var(--ink-soft);}
-.tbl.board tr.off td{opacity:.5;}
-.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
-.room{background:#f1ebde;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0;}
-.room.off{opacity:.55;}
-.room .rhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-.room .rcode{font-size:12px;color:var(--ink-soft);}
-.room .players li{background:#fff;padding:5px 10px;}
-.room .setbox{background:#fff;}
-.room .rstart{font-size:16px;}
-.room .ragain{font-size:15px;}
-.room .rall{align-self:flex-start;}
-#gmLinkRow input{flex:1 1 120px;width:auto;}
