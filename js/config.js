@@ -20,6 +20,8 @@ const ROUNDS = [null,
 const PLATE = { x: LW / 2, y: 150, rx: 72, ry: 45 };
 const COLORS = ['#c8161d', '#1f5fbf', '#1d8a4a', '#e08a00', '#7b3fb5', '#0c8f8f', '#d63384', '#5c4033', '#2b2823', '#6f8f00']; // one per player slot (MAX_PLAYERS)
 const PREFIX = 'quatca-vao-dia-2026-';
+const SLOT_PREFIX = PREFIX + 'cho-phong-'; // a quản trò's tab holds one of MAX_ROOMS fixed ids while their room is open
+const MAX_ROOMS = 3, MAX_TEAMS = 6;        // rooms open at once; teams in one room
 // What the host can set for each round (defaults here), and the choices offered
 const DEFAULT_ROUND = { fish: FISH_N, time: ROUND_TIME, plate: 1 };
 const FISH_MIN = 10, FISH_MAX = 200, FISH_STEP = 10; // fish count is a multiple of 10: one tenth of the fish for each point value 1..10

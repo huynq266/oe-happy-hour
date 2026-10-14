@@ -1,7 +1,7 @@
 // ================= HUD =================
 function updateHud() {
   const C = cfg();
-  $('roundPill').textContent = `Vòng ${R.round}/3 · ${C.name}`;
+  $('roundPill').textContent = (role === 'host' ? `Đội ${teamNo} · ` : '') + `Vòng ${R.round}/3 · ${C.name}`; // the quản trò: the team being watched
   $('time').textContent = fmtTime(phase === 'count' ? roundSet(R.round).time : R.time);
   $('timePill').classList.toggle('hot', phase === 'play' && R.time <= 30);
   $('score').textContent = R.score; $('total').textContent = R.fish.reduce((a, f) => a + (f.pts || 0), 0); // points in the plate / on the field
@@ -22,10 +22,12 @@ function updateHud() {
 
 // ================= UI flow =================
 function show(id) {
-  ['home', 'lobby', 'endScreen'].forEach(x => $(x).hidden = x !== id); $('hud').hidden = !(phase === 'count' || phase === 'play' || phase === 'over');
-  document.body.classList.toggle('gm', mySlot < 0 && role === 'host');
+  ['home', 'pick', 'lobby', 'endScreen', 'board'].forEach(x => $(x).hidden = x !== id); $('hud').hidden = !(phase === 'count' || phase === 'play' || phase === 'over');
+  $('watchBar').hidden = true;
+  document.body.classList.toggle('gm', role === 'host');
 }
 function onPhase() {
+  if (role === 'host') { hostDirty(); return; } // a team's phase changed: the quản trò's board shows it (room.js)
   if (phase === 'count' || phase === 'play' || phase === 'over') { show(null); renderChips(); updateHud(); }
   else if (phase === 'lobby') { show('lobby'); renderLobby(); }
   else if (phase === 'final') { show('endScreen'); renderFinal(); }
@@ -37,7 +39,8 @@ function dotLi(slot, text, right) {
   li.append(d, document.createTextNode(text), em);
   return li;
 }
-function renderChips() {
+function renderChips() { if (role === 'host') hostDirty(); else drawChips(); }
+function drawChips() {
   const el = $('chips'); el.textContent = '';
   for (const p of players) {
     const c = document.createElement('div'); c.className = 'chip';
@@ -47,6 +50,7 @@ function renderChips() {
   }
 }
 function renderLobby() {
+  if (role === 'host') { hostDirty(); return; }
   const host = role !== 'client', solo = role === 'solo', C = ROUNDS[nextRound];
   $('codeBox').hidden = solo;
   $('lobbyCode').textContent = roomCode || '----';
@@ -76,13 +80,11 @@ function renderLobby() {
     `Mỗi con cá có từ 1 đến 10 điểm, ghi ở mặt sau con cá: mỗi mức điểm có ${S.fish / 10} con. Cá vào đĩa thì đội được cộng điểm của con đó, bay ra thì bị trừ lại.`,
     ...(players.length > 1 ? ['Hết vòng, mỗi người phải có ít nhất 1 con cá trong đĩa. Nếu có người không có con nào, đội bị trừ số điểm bằng số cá của người cao điểm nhất đội.'] : []),
     ...C.rules].forEach(t => { const li = document.createElement('li'); li.textContent = t; rl.appendChild(li); });
-  // settings for the round about to be played (host / solo), and the room's player limit (host)
+  // settings for the round about to be played (solo; the quản trò sets them on the board)
   $('setBox').hidden = !host;
-  $('roomBox').hidden = role !== 'host';
   if (host) fillSettings();
-  // team + players
+  // players
   $('teamRow').hidden = !host;
-  $('teamField').hidden = !(role === 'host' && !results.some(r => r != null));
   const rs = $('roundSel'); rs.textContent = '';
   for (let r = 1; r <= 3; r++) {
     const o = document.createElement('option'); o.value = r;
@@ -90,7 +92,6 @@ function renderLobby() {
     rs.appendChild(o);
   }
   rs.value = nextRound;
-  $('teamSel').value = teamNo;
   $('pCount').textContent = players.length;
   $('pMax').textContent = solo ? 1 : settings.maxPlayers;
   const ul = $('pList'); ul.textContent = '';
@@ -104,11 +105,6 @@ function renderLobby() {
   for (const p of players) {
     const li = dotLi(p.slot, p.name + (p.slot === mySlot ? ' (bạn)' : ''), solo ? '' : p.ready ? 'sẵn sàng ✓' : 'chưa sẵn sàng');
     if (p.ready) li.querySelector('em').className = 'ok';
-    if (role === 'host' && phase === 'lobby') {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'kick'; b.textContent = 'Mời ra';
-      b.addEventListener('click', () => kickPlayer(p.slot));
-      li.appendChild(b);
-    }
     ul.appendChild(li);
   }
   $('startBtn').hidden = !host;
@@ -119,9 +115,8 @@ function renderLobby() {
   $('readyBtn').hidden = role !== 'client' || !meP;
   $('readyBtn').classList.toggle('on', !!(meP && meP.ready));
   $('readyBtn').textContent = meP && meP.ready ? 'Đã sẵn sàng ✓ (bấm để huỷ)' : `Sẵn sàng chơi vòng ${nextRound}`;
+  $('swBtn').hidden = role !== 'client' || !meP;
   $('lobbyNote').textContent = solo ? `Chơi thử một mình: bạn được quạt cả ${S.fish} con.`
-    : host ? (!players.length ? 'Chờ ít nhất 1 người chơi vào phòng. ' : allReady ? '' : 'Chờ mọi người bấm "Sẵn sàng" rồi mới bắt đầu được. ') +
-      `Đội ${teamNo}. Gửi mã phòng cho người chơi. Bạn là quản trò: không chơi, chỉ cài đặt từng vòng, bắt đầu vòng và theo dõi. Giữ tab này luôn mở trong lúc chơi, vì máy quản trò là máy tính điểm cho cả đội.`
     : meP && meP.ready ? `Đội ${teamNo}. Chờ quản trò bắt đầu vòng ${nextRound}...`
     : `Đội ${teamNo}. Xem luật vòng ${nextRound} rồi bấm "Sẵn sàng".`;
 }
@@ -133,20 +128,17 @@ function buildSettings() {
   for (const [k, label] of PLATE_OPTS) { const o = document.createElement('option'); o.value = k; o.textContent = label; $('setPlate').appendChild(o); }
   for (const [id, key] of [['setFish', 'fish'], ['setTime', 'time'], ['setPlate', 'plate']])
     $(id).addEventListener('change', () => { settings.rounds[nextRound][key] = +$(id).value; unready(); settingsChanged(); $(id).value = roundSet(nextRound)[key]; }); // shows the count rounded to a multiple of 10
-  for (let n = 1; n <= MAX_PLAYERS; n++) { const o = document.createElement('option'); o.value = n; o.textContent = n + ' người'; $('maxSel').appendChild(o); }
-  $('maxSel').addEventListener('change', () => { settings.maxPlayers = +$('maxSel').value; settingsChanged(); });
 }
 function settingsChanged() {
   settings = cleanSettings(settings); // keeps a typed fish count in range
   try { localStorage.setItem('quatca-settings', JSON.stringify(settings)); } catch (e) {} // next time's starting values
-  broadcast(lobbyMsg()); renderLobby();
+  renderLobby();
 }
 function fillSettings() {
   const S = roundSet(nextRound);
   $('setLabel').textContent = `Cài đặt vòng ${nextRound} · ${ROUNDS[nextRound].name}`;
   for (const [id, v] of [['setFish', S.fish], ['setTime', S.time], ['setPlate', S.plate]])
     if (document.activeElement !== $(id)) $(id).value = v;
-  $('maxSel').value = settings.maxPlayers;
 }
 // the next round's setup changed: everyone has to look again and say they're ready
 function unready() { players.forEach(p => { p.ready = false; }); }
@@ -174,17 +166,38 @@ function renderFinal() {
     ? 'Quản trò giữ kết quả của đội. Đội có tổng số cá 3 vòng cao nhất thắng.'
     : 'Sao chép dòng kết quả để lưu lại. Đội có tổng số cá 3 vòng cao nhất thắng.';
 }
+// a player choosing their team: the room's teams as big buttons
+function renderPick() {
+  $('pickCode').textContent = roomCode || '----';
+  $('pickWho').textContent = (pickHost ? `Phòng của quản trò ${pickHost}. ` : '') + 'Chọn đúng đội của bạn. Chọn nhầm thì vào màn chờ bấm "Đổi đội".';
+  const box = $('pickList'); box.textContent = '';
+  for (const t of teamList) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'team';
+    const full = t.n >= teamMax, why = t.out ? 'đã dừng chơi' : t.ph !== 'lobby' ? 'đang chơi' : full ? 'đủ người' : `${t.n}/${teamMax} người`;
+    b.disabled = pickWait || t.out || t.ph !== 'lobby' || full;
+    const n = document.createElement('span'); n.textContent = `Đội ${t.no}`;
+    const em = document.createElement('em'); em.textContent = why;
+    b.append(n, em);
+    b.addEventListener('click', () => pickTeam(t.i));
+    box.appendChild(b);
+  }
+  if (!teamList.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'Phòng chưa có đội nào.'; box.appendChild(p); }
+}
+function pickErr(msg) { const e = $('pickErr'); e.textContent = msg; e.hidden = !msg; }
 function homeErr(msg) { const e = $('homeErr'); e.textContent = msg; e.hidden = !msg; }
 function resetNet() {
   try { if (peer) peer.destroy(); } catch (e) {}
-  peer = null; hostConn = null; conns.clear(); gotSnap = false; snaps = []; base = null; clkOff = null;
+  try { if (slotPeer) slotPeer.destroy(); } catch (e) {}
+  for (const t of room.teams) t.conns.clear();
+  slotPeer = null; pend.clear(); where.clear(); resetRoom();
+  peer = null; hostConn = null; conns = new Map(); gotSnap = false; snaps = []; base = null; clkOff = null;
   lastSq = 0; lobbySq = 0; jit = 0; renderDelay = 80; snapGap = 33; rtt = 0; connType = '';
 }
 function backHome(msg) {
-  resetNet(); role = null; phase = 'home'; G = null; R.fans = [];
+  resetNet(); role = null; phase = 'home'; G = null; R = freshR(); players = []; pops = [];
   preview();
   show('home'); homeErr(msg || '');
-  $('hostBtn').disabled = false; $('joinBtn').disabled = false;
+  $('hostBtn').disabled = false; $('joinBtn').disabled = false; $('watchBar').hidden = true;
 }
 function getName() {
   const n = $('name').value.trim().slice(0, 16);

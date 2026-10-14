@@ -15,51 +15,67 @@ function every(ms, fn) {
 const SIM_DT = 1 / 60, MAX_CATCHUP = 120;
 let lastSim = performance.now();
 const simming = () => (role === 'host' || role === 'solo') && G && (phase === 'count' || phase === 'play' || phase === 'over');
+function simFor(left) { while (left > 1e-6 && simming()) { const dt = Math.min(SIM_DT, left); step(dt); left -= dt; } }
 every(16, () => {
-  const now = performance.now(); let left = Math.min(MAX_CATCHUP, (now - lastSim) / 1000); lastSim = now;
+  const now = performance.now(), left = Math.min(MAX_CATCHUP, (now - lastSim) / 1000); lastSim = now;
+  if (role === 'host') { for (const t of room.teams) if (t.G && isLive(t)) inTeam(t, () => simFor(left)); return; } // every team's field
   if (!simming()) return;
   pumpLocalInput();
-  while (left > 1e-6 && simming()) { const dt = Math.min(SIM_DT, left); step(dt); left -= dt; }
+  simFor(left);
 });
-// Snapshots to the players: 30 a second, or 20 with more than 5 players so the host's upload (one copy per
-// player, ~2.5KB each) stays modest; each player's screen interpolates between them either way.
+// Snapshots to the players: 30 a second, or 20 when the room has more than 12 players playing, so the quản trò's
+// upload (one copy per player, ~1-2.5KB each) stays modest; each player's screen interpolates between them either way.
 let snapN = 0, lastSnapT = 0;
 every(10, () => {
-  if (!(role === 'host' && G && (phase === 'count' || phase === 'play' || phase === 'over'))) return;
-  const now = performance.now(), gap = players.length > 5 ? 50 : 33;
+  if (role !== 'host' || !room.live) return;
+  const live = room.teams.filter(t => t.G && isLive(t)); if (!live.length) return;
+  const now = performance.now(), gap = live.reduce((a, t) => a + t.players.length, 0) > 12 ? 50 : 33;
   if (now - lastSnapT < gap - 3) return;
   lastSnapT = now;
-  broadcast(snapshot(++snapN % Math.round(500 / gap) !== 0)); // a full one about every 0.5s
+  const delta = ++snapN % Math.round(500 / gap) !== 0; // a full one about every 0.5s
+  for (const t of live) inTeam(t, () => broadcast(snapshot(delta)));
 });
 let lastFrame = performance.now();
 let fpsN = 0;
 function frame(t) {
   const dt = Math.min(0.05, (t - lastFrame) / 1000); lastFrame = t; fpsN++;
   interpClient(dt);
-  for (const p of pops) { if (p.k === 't') p.y -= 40 * dt; p.life -= dt; }
-  pops = pops.filter(p => p.life > 0);
+  const agePops = () => { for (const p of pops) { if (p.k === 't') p.y -= 40 * dt; p.life -= dt; } pops = pops.filter(p => p.life > 0); };
+  if (role === 'host') room.teams.forEach(t => inTeam(t, agePops)); else agePops();
   me.swing *= Math.exp(-6 * dt);
   me.ang = easeAng(me.ang, me.tAng, 1 - Math.exp(-14 * dt));
-  draw(dt);
-  if (phase === 'count' || phase === 'play') updateHud();
+  const w = role === 'host' ? watched() : null; // the quản trò sees the team they picked
+  if (w) inTeam(w, () => { draw(dt); if (phase === 'count' || phase === 'play') updateHud(); });
+  else { draw(dt); if (phase === 'count' || phase === 'play') updateHud(); }
   requestAnimationFrame(frame);
 }
 
 // ================= buttons =================
-for (let i = 1; i <= 10; i++) { const o = document.createElement('option'); o.value = i; o.textContent = 'Đội ' + i; $('teamSel').appendChild(o); }
-buildSettings();
+buildSettings(); buildBoard();
 // the host's / solo player's own settings from last time (a player gets the host's from the lobby messages)
 function loadSettings() { try { settings = cleanSettings(JSON.parse(localStorage.getItem('quatca-settings'))); } catch (e) { settings = cleanSettings(null); } }
-try { const n = localStorage.getItem('quatca-name'); if (n) $('name').value = n; const t = +localStorage.getItem('quatca-team'); if (t) teamNo = t; } catch (e) {}
-$('teamSel').addEventListener('change', () => { teamNo = +$('teamSel').value; try { localStorage.setItem('quatca-team', teamNo); } catch (e) {} broadcast(lobbyMsg()); renderLobby(); });
-$('roundSel').addEventListener('change', () => { if (role === 'client') return; nextRound = Math.min(3, Math.max(1, +$('roundSel').value | 0)); unready(); broadcast(lobbyMsg()); renderLobby(); });
+try { const n = localStorage.getItem('quatca-name'); if (n) $('name').value = n; } catch (e) {}
+// opened from a quản trò's link (?phong=CODE): the code is filled in, so the player only types their name. People
+// coming that way are players: no "Mở phòng" for them.
+const linkCode = (new URLSearchParams(location.search).get('phong') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+if (linkCode.length === 4) {
+  $('codeIn').value = linkCode; $('hostBtn').hidden = true; $('hostOr').hidden = true;
+  $('joinNote').textContent = `Bạn mở link vào phòng ${linkCode}. Nhập tên rồi bấm "Vào phòng" để chọn đội.`; $('joinNote').hidden = false;
+} else countRooms();
+$('name').addEventListener('keydown', e => { if (e.key === 'Enter' && linkCode) joinRoom(); });
+$('roundSel').addEventListener('change', () => { if (role !== 'solo') return; nextRound = Math.min(3, Math.max(1, +$('roundSel').value | 0)); renderLobby(); });
 $('readyBtn').addEventListener('click', () => {
   const p = players.find(p => p.slot === mySlot);
   if (role !== 'client' || !p || !hostConn || !hostConn.open) return;
   p.ready = !p.ready; renderLobby(); // shown right away; the host's lobby message confirms it
   hostConn.send({ k: 'rd', v: p.ready });
 });
-$('pickBtn').addEventListener('click', () => { if (role === 'client') return; G = null; phase = 'lobby'; broadcast(lobbyMsg()); onPhase(); });
+$('pickBtn').addEventListener('click', () => { if (role !== 'solo') return; G = null; phase = 'lobby'; onPhase(); });
+$('swBtn').addEventListener('click', () => {
+  if (role !== 'client' || phase !== 'lobby' || !hostConn || !hostConn.open) return;
+  hostConn.send({ k: 'sw' }); toPickScreen('');
+});
+$('pickBack').addEventListener('click', () => backHome());
 $('hostBtn').addEventListener('click', hostRoom);
 $('joinBtn').addEventListener('click', joinRoom);
 $('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
@@ -70,8 +86,8 @@ $('soloBtn').addEventListener('click', () => {
 });
 $('startBtn').addEventListener('click', startRound);
 $('againBtn').addEventListener('click', () => {
-  if (role === 'client') return;
-  resetGame(); G = null; phase = 'lobby'; broadcast(lobbyMsg()); onPhase();
+  if (role !== 'solo') return;
+  resetGame(); G = null; phase = 'lobby'; onPhase();
 });
 $('copyBtn').addEventListener('click', () => {
   const t = $('resultText').value;
@@ -102,19 +118,19 @@ async function readConnType() {
   } catch (e) { connType = ''; }
 }
 setInterval(() => {
-  const el = $('netStats'), show = netOn && (phase === 'count' || phase === 'play' || phase === 'over' || phase === 'lobby');
+  const el = $('netStats'), show = netOn && (phase === 'count' || phase === 'play' || phase === 'over' || phase === 'lobby' || phase === 'board');
   el.hidden = !show;
   if (show) {
     if (role === 'client' && hostConn && hostConn.open) { hostConn.send({ k: 'pi', t: performance.now() }); readConnType(); }
     const res = `${cv.width}×${cv.height}`;
     el.textContent = role === 'client'
       ? `${fpsN} hình/s · ${res} · ping ${Math.round(rtt)}ms · ${snapRx} gói/s · trễ hình ${Math.round(renderDelay)}ms · thiếu gói ${frames ? Math.round(100 * starve / frames) : 0}%${connType ? ' · ' + connType : ''}`
-      : `${fpsN} hình/s · ${res} · ${conns.size} thành viên`;
+      : `${fpsN} hình/s · ${res} · ${role === 'host' ? where.size : conns.size} người chơi`;
   }
   fpsN = 0; snapRx = 0; frames = 0; starve = 0;
 }, 1000);
 document.addEventListener('fullscreenchange', () => { $('fsBtn').textContent = document.fullscreenElement ? 'Thoát toàn màn hình' : 'Toàn màn hình'; });
-addEventListener('beforeunload', () => { try { if (peer) peer.destroy(); } catch (e) {} });
+addEventListener('beforeunload', () => { try { if (peer) peer.destroy(); if (slotPeer) slotPeer.destroy(); } catch (e) {} });
 
 function preview() { // field shown behind the cards
   const saved = players; players = [{ slot: 0, name: '' }];

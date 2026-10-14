@@ -1,9 +1,9 @@
 // ================= state =================
-let role = null;            // 'host' | 'client' | 'solo'
-let phase = 'home';         // home | lobby | count | play | over | final
+let role = null;            // 'host' (quản trò: runs a room of several teams, doesn't play) | 'client' | 'solo'
+let phase = 'home';         // home | pick (player choosing a team) | lobby | count | play | over | final | board (quản trò)
 let peer = null, hostConn = null, roomCode = '';
-const conns = new Map();    // host: peerId -> {conn, slot, name}
-let netSq = 0;              // host: sequence on every lobby/snapshot message (the data channel is unordered)
+let conns = new Map();      // host, one team's: peerId -> {conn, slot, name}
+let netSq = 0;              // host: sequence on every lobby/snapshot message, across all teams (the data channel is unordered)
 let players = [];           // [{slot, name}]: the team. The host (quản trò) runs the room but isn't in it.
 let mySlot = 0, myName = '', teamNo = 1; // mySlot -1: the host, who has no fan
 let hostName = '';
@@ -16,7 +16,9 @@ let lastPts = null;         // {slot: points} for the round just played
 let lastPen = null;         // end-of-round penalty, if any: {n, top, empty: [names]}
 let G = null;               // authoritative sim (host / solo)
 let pops = [];
-const R = { cred: {}, quota: {}, round: 1, fish: [], plateX: LW / 2, time: ROUND_TIME, score: 0, fouls: 0, cd: 3, wind: 0, fans: [] };
+// what the field shows: the sim's state (host / solo) or the interpolated snapshots (client). The host keeps one per team.
+const freshR = () => ({ cred: {}, quota: {}, round: 1, fish: [], plateX: LW / 2, time: ROUND_TIME, score: 0, fouls: 0, cd: 3, wind: 0, fans: [] });
+let R = freshR();
 let gotSnap = false;
 
 // ================= helpers =================

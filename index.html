@@ -33,7 +33,7 @@
 <div class="overlay" id="home">
   <div class="card">
     <h1>Quạt cá <span>vào đĩa</span></h1>
-    <p class="lede">Cả đội quạt chung một sân, 3 vòng. Quản trò tạo phòng, chọn số cá, thời gian và cỡ đĩa cho từng vòng. Mỗi người chỉ được quạt vào đĩa tối đa số cá ÷ số người trong đội (100 cá, đội 4 người: 25 con/người). Mỗi con cá có 1–10 điểm ghi ở mặt sau.</p>
+    <p class="lede">Mỗi đội quạt chung một sân, 3 vòng. Quản trò mở phòng cho vài đội, gửi link cho các đội: mỗi người mở link, nhập tên rồi chọn đội của mình. Mỗi người chỉ được quạt vào đĩa tối đa số cá ÷ số người trong đội (100 cá, đội 4 người: 25 con/người). Mỗi con cá có 1–10 điểm ghi ở mặt sau.</p>
     <ul class="rules">
       <li><b>Nhấn giữ chuột / chạm giữ</b>: giơ quạt lên. Giữ càng lâu quạt càng cao, đến một mức thì dừng.</li>
       <li><b>Thả ra</b>: đập quạt xuống đất, gió tỏa tròn quanh chỗ đập. Quạt giơ càng cao, gió càng mạnh, cá bay càng xa.</li>
@@ -42,16 +42,78 @@
       <li><b>Vòng 3 · Khó</b>: đĩa trôi, có gió ngang, đập quạt trúng cá bị trừ giây.</li>
     </ul>
     <div class="field"><label for="name">Tên của bạn</label><input id="name" maxlength="16" placeholder="VD: Minh Anh" autocomplete="off"></div>
-    <button class="go" id="hostBtn" type="button">Tạo phòng (quản trò)</button>
-    <div class="or">hoặc vào phòng để chơi</div>
     <div class="row">
       <div class="field"><label for="codeIn">Mã phòng</label><input class="code" id="codeIn" maxlength="4" placeholder="ABCD" autocomplete="off"></div>
-      <button class="ghost" id="joinBtn" type="button" style="flex:0 0 auto">Vào phòng</button>
+      <button class="go" id="joinBtn" type="button" style="flex:0 0 auto">Vào phòng</button>
     </div>
+    <p class="note" id="joinNote" hidden></p>
     <p class="err" id="homeErr" hidden></p>
+    <div class="or" id="hostOr">dành cho quản trò</div>
+    <button class="ghost" id="hostBtn" type="button">Mở phòng (quản trò)</button>
+    <p class="note" id="hostNote" hidden>Đã đủ 3 phòng chơi. Nhập mã phòng quản trò gửi để vào chơi.</p>
     <button class="link" id="soloBtn" type="button">Chơi thử một mình</button>
   </div>
 </div>
+
+<!-- A player choosing their team -->
+<div class="overlay" id="pick" hidden>
+  <div class="card">
+    <div class="codebox"><span class="lbl">Mã phòng</span><span class="bigcode" id="pickCode">----</span></div>
+    <h2>Bạn ở đội nào?</h2>
+    <p class="lede" id="pickWho"></p>
+    <div class="teams" id="pickList"></div>
+    <p class="err" id="pickErr" hidden></p>
+    <button class="link" id="pickBack" type="button">Quay lại</button>
+  </div>
+</div>
+
+<!-- The quản trò's board: the room's teams, rounds and scores -->
+<div class="overlay" id="board" hidden>
+  <div class="card wide">
+    <div class="bhead">
+      <div>
+        <h2>Phòng của <span id="bdHost"></span></h2>
+        <p class="lede">Gửi link cho các đội: mỗi người mở link, nhập tên rồi chọn đội của mình. Giữ tab này mở suốt buổi chơi, vì máy này chạy sân của mọi đội trong phòng.</p>
+      </div>
+      <div class="codebox"><span class="lbl">Mã phòng</span><span class="bigcode" id="bdCode">----</span></div>
+    </div>
+    <div class="row">
+      <input class="result-text" id="bdLink" readonly aria-label="Link vào phòng" style="flex:1 1 260px">
+      <button class="ghost" id="bdCopy" type="button">Sao chép link</button>
+    </div>
+    <div class="setbox">
+      <div class="row">
+        <div class="field"><label for="bdTeams">Số đội</label><select id="bdTeams"></select></div>
+        <div class="field"><label for="bdFirst">Đội đầu tiên</label><select id="bdFirst"></select></div>
+        <div class="field"><label for="bdMax">Mỗi đội tối đa</label><select id="bdMax"></select></div>
+      </div>
+      <p class="note" id="bdTeamsHint"></p>
+      <span class="lbl" id="bdSetLbl">Cài đặt vòng 1</span>
+      <div class="row">
+        <div class="field"><label for="bdRound">Chơi vòng</label><select id="bdRound"></select></div>
+        <div class="field"><label for="bdFish">Số cá</label><input id="bdFish" type="number"></div>
+        <div class="field"><label for="bdTime">Thời gian</label><select id="bdTime"></select></div>
+        <div class="field"><label for="bdPlate">Cỡ đĩa</label><select id="bdPlate"></select></div>
+      </div>
+    </div>
+    <button class="go" id="bdStart" type="button">Bắt đầu vòng 1</button>
+    <p class="note" id="bdNote"></p>
+    <div>
+      <span class="lbl">Bảng điểm <span id="bdFocus"></span></span>
+      <table class="tbl board">
+        <thead><tr><th>#</th><th>Đội</th><th>Người</th><th>Tình trạng</th><th>V1</th><th>V2</th><th>V3</th><th>Tổng</th></tr></thead>
+        <tbody id="bdScores"></tbody>
+      </table>
+    </div>
+    <div class="rooms" id="bdTeamBox"></div>
+    <div class="row links">
+      <button class="link" id="bdAgain" type="button">Xoá điểm, chơi lại từ đầu</button>
+      <button class="link" id="bdClose" type="button">Đóng phòng</button>
+    </div>
+  </div>
+</div>
+<!-- The quản trò during a round: whose field to watch -->
+<div class="watch" id="watchBar" hidden></div>
 
 <!-- Lobby / between rounds -->
 <div class="overlay" id="lobby" hidden>
@@ -67,7 +129,6 @@
     <ul class="rules" id="nextRules"></ul>
     <div class="row" id="teamRow">
       <div class="field" id="roundField"><label for="roundSel">Chơi vòng</label><select id="roundSel"></select></div>
-      <div class="field" id="teamField"><label for="teamSel">Đội số</label><select id="teamSel"></select></div>
     </div>
     <div class="setbox" id="setBox" hidden>
       <span class="lbl" id="setLabel">Cài đặt vòng 1</span>
@@ -77,14 +138,12 @@
         <div class="field"><label for="setPlate">Cỡ đĩa</label><select id="setPlate"></select></div>
       </div>
     </div>
-    <div class="setbox" id="roomBox" hidden>
-      <div class="row"><label for="maxSel">Số người chơi tối đa</label><select id="maxSel"></select></div>
-    </div>
     <div><span class="lbl">Người chơi (<span id="pCount">1</span>/<span id="pMax">6</span>)</span></div>
     <ul class="players" id="pList"></ul>
     <button class="go" id="startBtn" type="button">Bắt đầu vòng 1</button>
     <button class="go" id="readyBtn" type="button" hidden>Sẵn sàng</button>
     <p class="note" id="lobbyNote"></p>
+    <button class="link" id="swBtn" type="button" hidden>Chọn nhầm đội? Đổi đội</button>
   </div>
 </div>
 
@@ -112,6 +171,7 @@
 <script src="js/input.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/network.js"></script>
+<script src="js/room.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
