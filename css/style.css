@@ -102,7 +102,7 @@ button:disabled{opacity:.5;cursor:default;}
 .team em{font-family:var(--font-body);font-style:normal;font-weight:600;font-size:12px;color:var(--ink-soft);}
 .team:not(:disabled):hover{background:#f7d9d9;box-shadow:0 4px 0 #e0b0b0;}
 .team:active:not(:disabled){transform:translateY(3px);box-shadow:none;}
-/* quản trò's board */
+/* host's board */
 .card.wide{max-width:1100px;}
 .bhead{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
 .bhead > div:first-child{flex:1 1 320px;display:flex;flex-direction:column;gap:6px;}
@@ -122,7 +122,7 @@ button:disabled{opacity:.5;cursor:default;}
 .room .rbtns{align-items:center;justify-content:space-between;}
 .room .rwatch{font-size:15px;padding:6px 12px;}
 .room .rout{align-self:center;}
-/* quản trò during a round: pick the field to watch */
+/* host during a round: pick the field to watch */
 .watch{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:6;
   display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);}
 .wtab{font-family:var(--font-display);font-weight:800;font-size:15px;padding:6px 12px;border-radius:999px;background:var(--paper);

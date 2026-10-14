@@ -1,7 +1,7 @@
 // ================= HUD =================
 function updateHud() {
   const C = cfg();
-  $('roundPill').textContent = (role === 'host' ? `Đội ${teamNo} · ` : '') + `Vòng ${R.round}/3`; // the quản trò: the team being watched
+  $('roundPill').textContent = (role === 'host' ? `Đội ${teamNo} · ` : '') + `Vòng ${R.round}/3`; // the host: the team being watched
   $('time').textContent = fmtTime(phase === 'count' ? roundSet(R.round).time : R.time);
   $('timePill').classList.toggle('hot', phase === 'play' && R.time <= 30);
   $('score').textContent = R.score; $('total').textContent = R.fish.reduce((a, f) => a + (f.pts || 0), 0); // points in the plate / on the field
@@ -27,7 +27,7 @@ function show(id) {
   document.body.classList.toggle('gm', role === 'host');
 }
 function onPhase() {
-  if (role === 'host') { hostDirty(); return; } // a team's phase changed: the quản trò's board shows it (room.js)
+  if (role === 'host') { hostDirty(); return; } // a team's phase changed: the host's board shows it (room.js)
   if (phase === 'count' || phase === 'play' || phase === 'over') { show(null); renderChips(); updateHud(); }
   else if (phase === 'lobby') { show('lobby'); renderLobby(); }
   else if (phase === 'final') { show('endScreen'); renderFinal(); }
@@ -80,7 +80,7 @@ function renderLobby() {
     `Mỗi con cá có từ 1 đến 10 điểm, mỗi mức điểm có ${S.fish / 10} con. Cá vào đĩa thì đội được cộng điểm của con đó, bay ra thì bị trừ lại.`,
     ...(players.length > 1 ? ['Hết vòng, mỗi người phải có ít nhất 1 con cá trong đĩa. Cứ mỗi người không có con nào, đội bị trừ số điểm bằng số cá của người cao điểm nhất đội.'] : []),
     ...C.rules].forEach(t => { const li = document.createElement('li'); li.textContent = t; rl.appendChild(li); });
-  // settings for the round about to be played (solo; the quản trò sets them on the board)
+  // settings for the round about to be played (solo; the host sets them on the board)
   $('setBox').hidden = !host;
   if (host) fillSettings();
   // players
@@ -97,7 +97,7 @@ function renderLobby() {
   const ul = $('pList'); ul.textContent = '';
   if (!solo && hostName) { // the host, apart from the team
     const li = document.createElement('li'); li.className = 'gm';
-    const em = document.createElement('em'); em.textContent = 'quản trò, không chơi';
+    const em = document.createElement('em'); em.textContent = 'không chơi';
     li.append(document.createTextNode(hostName + (role === 'host' ? ' (bạn)' : '')), em);
     ul.appendChild(li);
   }
@@ -117,7 +117,7 @@ function renderLobby() {
   $('readyBtn').textContent = meP && meP.ready ? 'Đã sẵn sàng ✓ (bấm để huỷ)' : `Sẵn sàng chơi vòng ${nextRound}`;
   $('swBtn').hidden = role !== 'client' || !meP;
   $('lobbyNote').textContent = solo ? `Chơi thử một mình: bạn được quạt cả ${S.fish} con.`
-    : meP && meP.ready ? `Đội ${teamNo}. Chờ quản trò bắt đầu vòng ${nextRound}...`
+    : meP && meP.ready ? `Đội ${teamNo}. Chờ host bắt đầu vòng ${nextRound}...`
     : `Đội ${teamNo}. Xem luật vòng ${nextRound} rồi bấm "Sẵn sàng".`;
 }
 // The host sets up only the round about to be played: its fish / time / plate size. Built once, then only
@@ -163,13 +163,13 @@ function renderFinal() {
   $('againBtn').hidden = role === 'client';
   $('pickBtn').hidden = role === 'client';
   $('endNote').textContent = role === 'client'
-    ? 'Quản trò giữ kết quả của đội. Đội có tổng số cá 3 vòng cao nhất thắng.'
+    ? 'Host giữ kết quả của đội. Đội có tổng số cá 3 vòng cao nhất thắng.'
     : 'Sao chép dòng kết quả để lưu lại. Đội có tổng số cá 3 vòng cao nhất thắng.';
 }
 // a player choosing their team: the room's teams as big buttons
 function renderPick() {
   $('pickCode').textContent = roomCode || '----';
-  $('pickWho').textContent = (pickHost ? `Phòng của quản trò ${pickHost}. ` : '') + 'Chọn đúng đội của bạn. Chọn nhầm thì vào màn chờ bấm "Đổi đội".';
+  $('pickWho').textContent = (pickHost ? `Phòng của ${pickHost}. ` : '') + 'Chọn đúng đội của bạn. Chọn nhầm thì vào màn chờ bấm "Đổi đội".';
   const box = $('pickList'); box.textContent = '';
   for (const t of teamList) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'team';

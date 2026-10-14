@@ -19,13 +19,13 @@ const ROUNDS = [null,
 const PLATE = { x: LW / 2, y: 150, rx: 72, ry: 45 };
 const COLORS = ['#c8161d', '#1f5fbf', '#1d8a4a', '#e08a00', '#7b3fb5', '#0c8f8f', '#d63384', '#5c4033', '#2b2823', '#6f8f00']; // one per player slot (MAX_PLAYERS)
 const PREFIX = 'quatca-vao-dia-2026-';
-const SLOT_PREFIX = PREFIX + 'cho-phong-'; // a quản trò's tab holds one of MAX_ROOMS fixed ids while their room is open
+const SLOT_PREFIX = PREFIX + 'cho-phong-'; // a host's tab holds one of MAX_ROOMS fixed ids while their room is open
 const MAX_ROOMS = 3, MAX_TEAMS = 6, DEFAULT_TEAMS = 2; // rooms open at once; teams in one room (a new room has DEFAULT_TEAMS)
 const TEAM_NO_MAX = 10;                    // teams are numbered 1..10 across all the rooms
 // What the host can set for each round (defaults here), and the choices offered
 const DEFAULT_ROUND = { fish: FISH_N, time: ROUND_TIME, plate: 1 }, DEFAULT_MAX = 7; // DEFAULT_MAX: players per team
 const ROUND_TIMES = [0, 60, 120, 180]; // default time for rounds 1, 2, 3 (seconds)
-// the quản trò's last settings, kept as next time's starting values (renamed whenever the defaults change, so the new ones show)
+// the host's last settings, kept as next time's starting values (renamed whenever the defaults change, so the new ones show)
 const SETTINGS_KEY = 'quatca-caidat-2';
 const FISH_MIN = 10, FISH_MAX = 200, FISH_STEP = 10; // fish count is a multiple of 10: one tenth of the fish for each point value 1..10
 const TIME_OPTS = [30, 60, 90, 120, 180, 240, 300, 420, 600]; // seconds

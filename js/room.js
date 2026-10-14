@@ -1,5 +1,5 @@
-// ================= quản trò's room: several teams, each on its own field =================
-// The quản trò's tab runs every team's game. The sim, snapshot and lobby code (sim.js, sync.js, network.js) work on
+// ================= host's room: several teams, each on its own field =================
+// The host's tab runs every team's game. The sim, snapshot and lobby code (sim.js, sync.js, network.js) work on
 // one team's globals (G, players, conns, phase, results...), so the tab keeps a copy of those per team and swaps
 // the team's copy in around anything it does for that team (inTeam). Rounds are played by all teams together.
 const room = { teams: [], first: 1, next: 1, live: 0, watch: null, open: false }; // live: round being played; open: board shown during it
@@ -64,14 +64,14 @@ function resetRoom() {
   room.teams = []; room.live = 0; room.watch = null; room.open = false; curTeam = null; lastTm = '';
 }
 
-// ---- what the quản trò does
+// ---- what the host does
 function setTeams(n, first) {
   if (room.live) return;
   first = Math.min(TEAM_NO_MAX, Math.max(1, first | 0));
   n = Math.min(MAX_TEAMS, TEAM_NO_MAX - first + 1, Math.max(1, n | 0)); // no team past Đội 10
   while (room.teams.length > n) {
     const t = room.teams.pop();
-    for (const c of [...t.conns.values()]) toPick(c.conn, `Quản trò đã bỏ bớt Đội ${t.no}. Chọn lại đội nhé.`);
+    for (const c of [...t.conns.values()]) toPick(c.conn, `Host đã bỏ bớt Đội ${t.no}. Chọn lại đội nhé.`);
     if (t.el) t.el.remove();
   }
   while (room.teams.length < n) room.teams.push(newTeam(0));
@@ -101,7 +101,7 @@ function startAll() {
   room.live = room.next; room.open = false;
   watch(go.includes(room.watch) ? room.watch : go[0]);
 }
-// every team's round is over: on to the next round (the quản trò sends teams out before starting it)
+// every team's round is over: on to the next round (the host sends teams out before starting it)
 function roundOver() {
   const r = room.live; room.live = 0; room.open = false;
   room.next = Math.min(3, r + 1);
@@ -157,7 +157,7 @@ function renderWatchBar(w) {
     bar.appendChild(b);
   }
   const b = document.createElement('button'); b.type = 'button'; b.className = 'wtab dark';
-  b.textContent = room.open ? 'Xem sân' : 'Bảng quản trò';
+  b.textContent = room.open ? 'Xem sân' : 'Bảng host';
   b.addEventListener('click', () => { room.open = !room.open; hostDirty(); });
   bar.appendChild(b);
 }

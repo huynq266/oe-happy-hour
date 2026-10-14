@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Quạt Cá Vào Đĩa – Đồng Đội</title>
+<title>Lụm Cá – Đồng Đội</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Be+Vietnam+Pro:wght@400;600&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -32,11 +32,10 @@
 
 <div class="overlay" id="home">
   <div class="card">
-    <h1>Quạt cá <span>vào đĩa</span></h1>
-    <p class="lede">Mỗi đội quạt chung một sân, 3 vòng. Quản trò mở phòng cho vài đội, gửi link cho các đội: mỗi người mở link, nhập tên rồi chọn đội của mình. Mỗi người chỉ được quạt vào đĩa tối đa số cá ÷ số người trong đội (100 cá, đội 4 người: 25 con/người). Mỗi con cá có 1–10 điểm ghi ở mặt sau.</p>
+    <h1>Lụm <span>cá</span></h1>
+    <p class="lede">Mỗi đội quạt chung một sân, 3 vòng. Host mở phòng cho vài đội, gửi link cho các đội: mỗi người mở link, nhập tên rồi chọn đội của mình. Mỗi người chỉ được quạt vào đĩa tối đa số cá ÷ số người trong đội (100 cá, đội 4 người: 25 con/người). Mỗi con cá có số điểm từ 1-10.</p>
     <ul class="rules">
-      <li><b>Nhấn giữ chuột / chạm giữ</b>: giơ quạt lên. Giữ càng lâu quạt càng cao, đến một mức thì dừng.</li>
-      <li><b>Thả ra</b>: đập quạt xuống đất, gió tỏa tròn quanh chỗ đập. Quạt giơ càng cao, gió càng mạnh, cá bay càng xa.</li>
+      <li><b>Nhấp chuột</b> để đập quạt. Quạt giơ càng cao, gió càng mạnh.</li>
       <li><b>Vòng 1</b>: cá chạm vào đĩa là tính điểm.</li>
       <li><b>Vòng 2</b>: đĩa nhỏ hơn, có vành, cá trong đĩa có thể bị hất ra.</li>
       <li><b>Vòng 3</b>: đĩa trôi, có gió ngang, đập quạt trúng cá bị trừ giây.</li>
@@ -48,9 +47,9 @@
     </div>
     <p class="note" id="joinNote" hidden></p>
     <p class="err" id="homeErr" hidden></p>
-    <div class="or" id="hostOr">dành cho quản trò</div>
-    <button class="ghost" id="hostBtn" type="button">Mở phòng (quản trò)</button>
-    <p class="note" id="hostNote" hidden>Đã đủ 3 phòng chơi. Nhập mã phòng quản trò gửi để vào chơi.</p>
+    <div class="or" id="hostOr">dành cho host</div>
+    <button class="ghost" id="hostBtn" type="button">Mở phòng (host)</button>
+    <p class="note" id="hostNote" hidden>Đã đủ 3 phòng chơi. Nhập mã phòng host gửi để vào chơi.</p>
     <button class="link" id="soloBtn" type="button">Chơi thử một mình</button>
   </div>
 </div>
@@ -67,7 +66,7 @@
   </div>
 </div>
 
-<!-- The quản trò's board: the room's teams, rounds and scores -->
+<!-- The host's board: the room's teams, rounds and scores -->
 <div class="overlay" id="board" hidden>
   <div class="card wide">
     <div class="bhead">
@@ -112,7 +111,7 @@
     </div>
   </div>
 </div>
-<!-- The quản trò during a round: whose field to watch -->
+<!-- The host during a round: whose field to watch -->
 <div class="watch" id="watchBar" hidden></div>
 
 <!-- Lobby / between rounds -->
@@ -153,13 +152,13 @@
     <h2>Xong 3 vòng!</h2>
     <p class="lede" id="endWho"></p>
     <table class="tbl"><tbody id="endTbl"></tbody></table>
-    <input class="result-text" id="resultText" readonly aria-label="Kết quả để gửi quản trò">
+    <input class="result-text" id="resultText" readonly aria-label="Kết quả để gửi host">
     <div class="row">
       <button class="go" id="copyBtn" type="button" style="flex:1">Sao chép kết quả</button>
       <button class="ghost" id="againBtn" type="button" style="flex:1">Chơi lại từ đầu</button>
     </div>
     <button class="link" id="pickBtn" type="button">Chọn vòng để chơi lại</button>
-    <p class="note" id="endNote">Gửi dòng kết quả cho quản trò. Đội có tổng điểm 3 vòng cao nhất thắng.</p>
+    <p class="note" id="endNote">Gửi dòng kết quả cho host. Đội có tổng điểm 3 vòng cao nhất thắng.</p>
   </div>
 </div>
 

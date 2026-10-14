@@ -1,10 +1,10 @@
 // ================= state =================
-let role = null;            // 'host' (quản trò: runs a room of several teams, doesn't play) | 'client' | 'solo'
-let phase = 'home';         // home | pick (player choosing a team) | lobby | count | play | over | final | board (quản trò)
+let role = null;            // 'host' (runs a room of several teams, doesn't play) | 'client' | 'solo'
+let phase = 'home';         // home | pick (player choosing a team) | lobby | count | play | over | final | board (host)
 let peer = null, hostConn = null, roomCode = '';
 let conns = new Map();      // host, one team's: peerId -> {conn, slot, name}
 let netSq = 0;              // host: sequence on every lobby/snapshot message, across all teams (the data channel is unordered)
-let players = [];           // [{slot, name}]: the team. The host (quản trò) runs the room but isn't in it.
+let players = [];           // [{slot, name}]: the team. The host runs the room but isn't in it.
 let mySlot = 0, myName = '', teamNo = 1; // mySlot -1: the host, who has no fan
 let hostName = '';
 let settings = cleanSettings(null); // per round fish / time / plate size, and the room's player limit (set by the host)

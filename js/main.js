@@ -23,7 +23,7 @@ every(16, () => {
   pumpLocalInput();
   simFor(left);
 });
-// Snapshots to the players: 30 a second, or 20 when the room has more than 12 players playing, so the quản trò's
+// Snapshots to the players: 30 a second, or 20 when the room has more than 12 players playing, so the host's
 // upload (one copy per player, ~1-2.5KB each) stays modest; each player's screen interpolates between them either way.
 let snapN = 0, lastSnapT = 0;
 every(10, () => {
@@ -44,7 +44,7 @@ function frame(t) {
   if (role === 'host') room.teams.forEach(t => inTeam(t, agePops)); else agePops();
   me.swing *= Math.exp(-6 * dt);
   me.ang = easeAng(me.ang, me.tAng, 1 - Math.exp(-14 * dt));
-  const w = role === 'host' ? watched() : null; // the quản trò sees the team they picked
+  const w = role === 'host' ? watched() : null; // the host sees the team they picked
   if (w) inTeam(w, () => { draw(dt); if (phase === 'count' || phase === 'play') updateHud(); });
   else { draw(dt); if (phase === 'count' || phase === 'play') updateHud(); }
   requestAnimationFrame(frame);
@@ -55,7 +55,7 @@ buildSettings(); buildBoard();
 // the host's / solo player's own settings from last time (a player gets the host's from the lobby messages)
 function loadSettings() { try { settings = cleanSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY))); } catch (e) { settings = cleanSettings(null); } }
 try { const n = localStorage.getItem('quatca-name'); if (n) $('name').value = n; } catch (e) {}
-// opened from a quản trò's link (?phong=CODE): the code is filled in, so the player only types their name. People
+// opened from a host's link (?phong=CODE): the code is filled in, so the player only types their name. People
 // coming that way are players: no "Mở phòng" for them.
 const linkCode = (new URLSearchParams(location.search).get('phong') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
 if (linkCode.length === 4) {

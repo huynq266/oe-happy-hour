@@ -1,4 +1,4 @@
-// ================= networking: host (quản trò) =================
+// ================= networking: host =================
 // A player whose link has fallen behind (data still queued to them) skips game snapshots until it catches up,
 // rather than piling up more and more lag; a full snapshot every ~0.5s puts them right again.
 const SEND_BACKLOG = 64 * 1024;
@@ -11,7 +11,7 @@ function broadcast(m) { // to the team in context (room.js inTeam)
 function lobbyMsg() { return { k: 'l', sq: ++netSq, ph: phase, players, host: hostName, set: settings, team: teamNo, next: nextRound, lr: lastRound, res: results.map(x => x || 0), last: lastPer, lastPts, pen: lastPen }; }
 function makeCode() { const A = 'ABCDEFGHJKMNPQRSTUVWXYZ'; let s = ''; for (let i = 0; i < 4; i++) s += A[Math.floor(Math.random() * A.length)]; return s; }
 
-// The quản trò's tab holds two ids: the room's (PREFIX + code), which players connect to, and one of MAX_ROOMS
+// The host's tab holds two ids: the room's (PREFIX + code), which players connect to, and one of MAX_ROOMS
 // slot ids, which only says "a room is open". No free slot: no new room.
 let slotPeer = null;
 const pend = new Map();   // peerId -> conn: connected, still choosing a team
@@ -19,8 +19,7 @@ const where = new Map();  // peerId -> the team the player is in
 function hostRoom() {
   homeErr('');
   if (!window.Peer) { homeErr('Không tải được phần kết nối mạng. Kiểm tra Internet rồi tải lại trang, hoặc bấm "Chơi thử một mình".'); return; }
-  const name = getName(); if (!name) return;
-  myName = name; hostName = name; role = 'host'; mySlot = -1; players = []; resetGame(); loadSettings(); // the host only runs the room
+  myName = hostName = 'Host'; role = 'host'; mySlot = -1; players = []; resetGame(); loadSettings(); // the host only runs the room
   $('hostBtn').disabled = true; homeErr('Đang mở phòng...');
   const saved = loadRoom(), order = [];
   if (saved && saved.slot >= 1 && saved.slot <= MAX_ROOMS) order.push(saved.slot); // a reloaded tab gets its own slot back
@@ -32,7 +31,7 @@ function takeSlot(order, saved, i = 0, tries = 0) {
   if (role !== 'host' || phase !== 'home') return;
   if (i >= order.length) {
     if (tries < 3) { setTimeout(() => takeSlot(order, saved, 0, tries + 1), 2500); return; }
-    backHome(`Đã đủ ${MAX_ROOMS} phòng chơi. Nhập mã phòng quản trò gửi để vào chơi.`); countRooms(); return;
+    backHome(`Đã đủ ${MAX_ROOMS} phòng chơi. Nhập mã phòng host gửi để vào chơi.`); countRooms(); return;
   }
   const n = order[i], p = new Peer(SLOT_PREFIX + n, { debug: 0 });
   let mine = false;
@@ -188,16 +187,16 @@ function joinRoom() {
   if (!window.Peer) { homeErr('Không tải được phần kết nối mạng. Kiểm tra Internet rồi tải lại trang.'); return; }
   const name = getName(); if (!name) return;
   const code = $('codeIn').value.trim().toUpperCase().replace(/[^A-Z]/g, '');
-  if (code.length !== 4) { homeErr('Mã phòng gồm 4 chữ cái, hỏi quản trò nhé.'); $('codeIn').focus(); return; }
+  if (code.length !== 4) { homeErr('Mã phòng gồm 4 chữ cái, hỏi host nhé.'); $('codeIn').focus(); return; }
   myName = name; role = 'client'; roomCode = code; resetGame();
   $('joinBtn').disabled = true; homeErr('Đang vào phòng ' + code + '...');
   peer = new Peer({ debug: 0 });
-  const timer = setTimeout(() => { if (phase === 'home') backHome(`Không vào được phòng ${code}. Kiểm tra lại mã, hoặc quản trò chưa mở phòng.`); }, 12000);
+  const timer = setTimeout(() => { if (phase === 'home') backHome(`Không vào được phòng ${code}. Kiểm tra lại mã, hoặc host chưa mở phòng.`); }, 12000);
   peer.on('open', () => {
     hostConn = peer.connect(PREFIX + code, { serialization: 'json' });
     hostConn.on('open', () => hostConn.send({ k: 'q' }));
     hostConn.on('data', d => onClientData(d, timer));
-    hostConn.on('close', () => { if (role === 'client') backHome('Mất kết nối với quản trò.'); });
+    hostConn.on('close', () => { if (role === 'client') backHome('Mất kết nối với host.'); });
   });
   peer.on('error', err => {
     clearTimeout(timer);
@@ -231,7 +230,7 @@ function onClientData(d, timer) {
     else backHome(String(d.why || 'Không vào được phòng.'));
   }
   else if (d.k === 'pk') toPickScreen(String(d.why || ''));
-  else if (d.k === 'kick') backHome(String(d.why || 'Quản trò đã mời bạn ra khỏi phòng.').slice(0, 120));
+  else if (d.k === 'kick') backHome(String(d.why || 'Host đã mời bạn ra khỏi phòng.').slice(0, 120));
   else if (d.k === 'po') { const r = performance.now() - (+d.t || 0); if (r >= 0 && r < 5000) rtt = rtt ? rtt * .7 + r * .3 : r; }
   else if (d.k === 'l') {
     if (phase === 'home' || phase === 'pick') return; // not in a team (yet / any more): an old team's message
