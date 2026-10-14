@@ -101,6 +101,8 @@ function startAll() {
   room.live = room.next; room.open = false;
   watch(go.includes(room.watch) ? room.watch : go[0]);
 }
+// Once the host has started the game, players stay in their team until the host starts over (againAll).
+function gameOn() { return !!room.live || room.teams.some(t => t.lastRound > 0); }
 // every team's round is over: on to the next round (the host sends teams out before starting it)
 function roundOver() {
   const r = room.live; room.live = 0; room.open = false;
@@ -263,7 +265,7 @@ function buildTeamCard(t) {
   q('.rout').addEventListener('click', () => {
     if (t.out) { t.out = false; saveRoom(); hostDirty(); return; }
     if (!t.players.length) { kickTeam(t); return; }
-    if (!armed) { q('.rout').textContent = `Bấm lần nữa để mời cả Đội ${t.no} ra`; armed = setTimeout(() => { armed = null; hostDirty(); }, 3000); return; }
+    if (!armed) { q('.rout').textContent = `Bấm lần nữa để kick cả Đội ${t.no}`; armed = setTimeout(() => { armed = null; hostDirty(); }, 3000); return; }
     clearTimeout(armed); armed = null; kickTeam(t);
   });
   q('.rout').armed = () => !!armed;
@@ -278,7 +280,7 @@ function fillTeamCard(t) {
     const lobby = t.phase === 'lobby', li = dotLi(p.slot, p.name, lobby ? (p.ready ? 'sẵn sàng ✓' : 'chưa sẵn sàng') : '');
     if (lobby && p.ready) li.querySelector('em').className = 'ok';
     if (between) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'kick'; b.textContent = 'Mời ra';
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'kick'; b.textContent = 'Kick';
       b.addEventListener('click', () => inTeam(t, () => kickPlayer(p.slot)));
       li.appendChild(b);
     }
@@ -287,5 +289,5 @@ function fillTeamCard(t) {
   if (!t.players.length) { const li = document.createElement('li'); li.className = 'empty'; li.textContent = t.out ? 'Đội đã dừng chơi' : 'Chưa có ai chọn đội này'; ul.appendChild(li); }
   q('.rwatch').hidden = !isLive(t);
   q('.rout').hidden = !between;
-  if (!q('.rout').armed()) q('.rout').textContent = t.out ? 'Cho đội chơi tiếp' : 'Mời cả đội ra (bị loại)';
+  if (!q('.rout').armed()) q('.rout').textContent = t.out ? 'Cho đội chơi tiếp' : 'Kick cả đội (bị loại)';
 }

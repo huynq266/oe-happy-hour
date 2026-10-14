@@ -8,7 +8,7 @@ function broadcast(m) { // to the team in context (room.js inTeam)
     try { c.conn.send(m); } catch (e) {}
   }
 }
-function lobbyMsg() { return { k: 'l', sq: ++netSq, ph: phase, players, host: hostName, set: settings, team: teamNo, next: nextRound, lr: lastRound, res: results.map(x => x || 0), last: lastPer, lastPts, pen: lastPen }; }
+function lobbyMsg() { return { k: 'l', sq: ++netSq, ph: phase, players, host: hostName, set: settings, team: teamNo, next: nextRound, lr: lastRound, lock: role === 'host' && gameOn(), res: results.map(x => x || 0), last: lastPer, lastPts, pen: lastPen }; }
 function makeCode() { const A = 'ABCDEFGHJKMNPQRSTUVWXYZ'; let s = ''; for (let i = 0; i < 4; i++) s += A[Math.floor(Math.random() * A.length)]; return s; }
 
 // The host's tab holds two ids: the room's (PREFIX + code), which players connect to, and one of MAX_ROOMS
@@ -105,7 +105,7 @@ function onHostData(conn, d) {
   if (d.k === 'q') { if (!where.has(conn.peer)) { pend.set(conn.peer, conn); sendTeams(conn); } return; }
   if (d.k === 'hi') { joinTeam(conn, d); return; }
   const t = where.get(conn.peer); if (!t) return;
-  if (d.k === 'sw') { if (t.phase === 'lobby' || t.phase === 'final') toPick(conn, ''); return; } // picked the wrong team
+  if (d.k === 'sw') { if (!gameOn() && (t.phase === 'lobby' || t.phase === 'final')) toPick(conn, ''); return; } // picked the wrong team: only before the game starts
   inTeam(t, () => onTeamData(conn, d));
 }
 function joinTeam(conn, d) {
@@ -230,7 +230,7 @@ function onClientData(d, timer) {
     else backHome(String(d.why || 'Không vào được phòng.'));
   }
   else if (d.k === 'pk') toPickScreen(String(d.why || ''));
-  else if (d.k === 'kick') backHome(String(d.why || 'Host đã mời bạn ra khỏi phòng.').slice(0, 120));
+  else if (d.k === 'kick') backHome(String(d.why || 'Bạn đã bị host kick khỏi phòng.').slice(0, 120));
   else if (d.k === 'po') { const r = performance.now() - (+d.t || 0); if (r >= 0 && r < 5000) rtt = rtt ? rtt * .7 + r * .3 : r; }
   else if (d.k === 'l') {
     if (phase === 'home' || phase === 'pick') return; // not in a team (yet / any more): an old team's message
@@ -241,6 +241,7 @@ function onClientData(d, timer) {
     teamNo = d.team | 0 || 1;
     nextRound = Math.min(3, Math.max(1, d.next | 0 || 1));
     lastRound = Math.min(3, Math.max(0, d.lr | 0));
+    teamLock = !!d.lock;
     results = Array.isArray(d.res) ? d.res.map(x => x | 0) : [];
     lastPer = d.last && typeof d.last === 'object' ? d.last : null;
     lastPts = d.lastPts && typeof d.lastPts === 'object' ? d.lastPts : null;

@@ -10,6 +10,7 @@ let hostName = '';
 let settings = cleanSettings(null); // per round fish / time / plate size, and the room's player limit (set by the host)
 let nextRound = 1;          // round shown in lobby
 let lastRound = 0;          // round just finished (0 = none yet)
+let teamLock = false;       // client: the host has started the game, so no changing teams
 let results = [];           // team score per finished round
 let lastPer = null;         // {slot: count} for the round just played
 let lastPts = null;         // {slot: points} for the round just played

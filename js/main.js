@@ -59,7 +59,7 @@ try { const n = localStorage.getItem('quatca-name'); if (n) $('name').value = n;
 // coming that way are players: no "Mở phòng" for them.
 const linkCode = (new URLSearchParams(location.search).get('phong') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
 if (linkCode.length === 4) {
-  $('codeIn').value = linkCode; $('hostBtn').hidden = true; $('hostOr').hidden = true;
+  $('codeIn').value = linkCode; $('hostBtn').hidden = true; $('hostOr').hidden = true; $('soloBtn').hidden = true; // players from a link only join
   $('joinNote').textContent = `Bạn mở link vào phòng ${linkCode}. Nhập tên rồi bấm "Vào phòng" để chọn đội.`; $('joinNote').hidden = false;
 } else countRooms();
 $('name').addEventListener('keydown', e => { if (e.key === 'Enter' && linkCode) joinRoom(); });
@@ -73,7 +73,7 @@ $('readyBtn').addEventListener('click', () => {
 $('pickBtn').addEventListener('click', () => { if (role !== 'solo') return; G = null; phase = 'lobby'; onPhase(); });
 $('swBtn').addEventListener('click', () => {
   if (role !== 'client' || phase !== 'lobby' || !hostConn || !hostConn.open) return;
-  hostConn.send({ k: 'sw' }); toPickScreen('');
+  hostConn.send({ k: 'sw' }); // the host answers with 'pk' (to the team picker) if changing is still allowed
 });
 $('pickBack').addEventListener('click', () => backHome());
 $('hostBtn').addEventListener('click', hostRoom);

@@ -115,7 +115,7 @@ function renderLobby() {
   $('readyBtn').hidden = role !== 'client' || !meP;
   $('readyBtn').classList.toggle('on', !!(meP && meP.ready));
   $('readyBtn').textContent = meP && meP.ready ? 'Đã sẵn sàng ✓ (bấm để huỷ)' : `Sẵn sàng chơi vòng ${nextRound}`;
-  $('swBtn').hidden = role !== 'client' || !meP;
+  $('swBtn').hidden = role !== 'client' || !meP || teamLock;
   $('lobbyNote').textContent = solo ? `Chơi thử một mình: bạn được quạt cả ${S.fish} con.`
     : meP && meP.ready ? `Đội ${teamNo}. Chờ host bắt đầu vòng ${nextRound}...`
     : `Đội ${teamNo}. Xem luật vòng ${nextRound} rồi bấm "Sẵn sàng".`;
