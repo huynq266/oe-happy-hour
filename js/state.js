@@ -34,7 +34,7 @@ function cleanSettings(s) {
     const o = rs[r] && typeof rs[r] === 'object' ? rs[r] : {};
     out.rounds[r] = {
       fish: Math.round(Math.min(FISH_MAX, Math.max(FISH_MIN, +o.fish || DEFAULT_ROUND.fish)) / FISH_STEP) * FISH_STEP,
-      time: TIME_OPTS.includes(+o.time) ? +o.time : DEFAULT_ROUND.time,
+      time: TIME_OPTS.includes(+o.time) ? +o.time : ROUND_TIMES[r],
       plate: PLATE_OPTS.some(p => p[0] === +o.plate) ? +o.plate : DEFAULT_ROUND.plate };
   }
   return out;

@@ -49,7 +49,7 @@ function loadRoom() {
 function setupRoom(saved) {
   room.first = Math.min(TEAM_NO_MAX, Math.max(1, saved ? saved.first | 0 || 1 : 1));
   room.next = Math.min(3, Math.max(1, saved ? saved.next | 0 || 1 : 1));
-  const st = saved ? saved.teams.slice(0, Math.min(MAX_TEAMS, TEAM_NO_MAX - room.first + 1)) : [{}, {}, {}, {}];
+  const st = saved ? saved.teams.slice(0, Math.min(MAX_TEAMS, TEAM_NO_MAX - room.first + 1)) : Array.from({ length: DEFAULT_TEAMS }, () => ({}));
   room.teams = (st.length ? st : [{}]).map((s, i) => {
     const t = newTeam(room.first + i);
     if (Array.isArray(s.res)) t.results = s.res.map(x => x == null ? undefined : +x || 0);
