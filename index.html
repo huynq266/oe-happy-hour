@@ -43,6 +43,7 @@
     </ul>
     <div class="field"><label for="name">Tên của bạn</label><input id="name" maxlength="16" placeholder="VD: Minh Anh" autocomplete="off"></div>
     <div class="field"><label for="gmIn">Mã quản trò (bỏ trống nếu không có)</label><input class="code" id="gmIn" maxlength="4" placeholder="WXYZ" autocomplete="off"></div>
+    <p class="note" id="qtNote" hidden></p>
     <button class="go" id="hostBtn" type="button">Tạo phòng (đội trưởng)</button>
     <div class="or">hoặc vào phòng của đội để chơi</div>
     <div class="row">
@@ -63,9 +64,16 @@
     <div class="gmhead">
       <div>
         <h2>Bảng quản trò</h2>
-        <p class="lede">Đội trưởng nhập mã này khi tạo phòng (hoặc trong phòng chờ) để phòng hiện ở đây. Giữ tab này mở suốt buổi chơi.</p>
+        <p class="lede">Gửi link dưới đây cho các đội trưởng: mở link, nhập tên rồi bấm "Tạo phòng" là phòng tự hiện ở đây. Giữ tab này mở suốt buổi chơi.</p>
       </div>
       <div class="codebox"><span class="lbl">Mã quản trò</span><span class="bigcode" id="gmCode">----</span></div>
+    </div>
+    <div class="field" style="flex:none">
+      <label for="gmLink">Link cho đội trưởng</label>
+      <div class="row">
+        <input class="result-text" id="gmLink" readonly style="flex:1 1 260px">
+        <button class="ghost" id="gmCopy" type="button">Sao chép link</button>
+      </div>
     </div>
     <div class="row">
       <button class="go" id="gmStartAll" type="button">Bắt đầu mọi phòng đã sẵn sàng</button>

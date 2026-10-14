@@ -68,6 +68,8 @@ function onBoardData(conn, d) {
 function roomGone(conn) {
   for (const r of gmRooms.values()) if (r.conn === conn) { r.on = false; renderBoard(); }
 }
+// the link the quản trò sends the đội trưởngs: it fills in the quản trò's code on their home screen
+function gmLinkUrl(code) { return location.origin + location.pathname + '?qt=' + code; }
 function cmd(r, m) { if (r.conn && r.conn.open) try { r.conn.send({ k: 'cmd', ...m }); } catch (e) {} }
 function keepTpl(set) { gmTpl = cleanSettings(set); try { localStorage.setItem('quatca-settings', JSON.stringify(gmTpl)); } catch (e) {} }
 const total = st => st.res.reduce((a, b) => a + (b || 0), 0);
@@ -83,6 +85,7 @@ function stateText(r) {
 function renderBoard() {
   if (role !== 'gm') return;
   $('gmCode').textContent = roomCode || '----';
+  $('gmLink').value = gmLinkUrl(roomCode);
   const rooms = [...gmRooms.values()].filter(r => r.st);
   $('gmEmpty').hidden = rooms.length > 0;
   $('gmBoardBox').hidden = !rooms.length;
